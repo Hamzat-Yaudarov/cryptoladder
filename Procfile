@@ -1,2 +1,1 @@
-web: npm start
-release: node scripts/init-db.js
+web: node src/server/index.js

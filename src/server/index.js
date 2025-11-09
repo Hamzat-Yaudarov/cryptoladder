@@ -289,8 +289,8 @@ async function startServer() {
     const dbReady = await initializeDatabase();
     console.log('');
 
-    // Start Express server
-    app.listen(PORT, async () => {
+    // Create server and start listening
+    const server = app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`🌐 App URL: https://cryptoladder-production.up.railway.app`);
       console.log(`🤖 Bot: @cryptoladderbot`);
@@ -300,12 +300,7 @@ async function startServer() {
 
       // Set webhook in production
       if (NODE_ENV === 'production') {
-        try {
-          await bot.setWebHook(WEBHOOK_URL);
-          console.log(`✅ Webhook set: ${WEBHOOK_URL}`);
-        } catch (err) {
-          console.warn('⚠️  Could not set webhook:', err.message);
-        }
+        setWebhookAsync();
       } else {
         console.log('📡 Bot: Polling mode (development)');
       }
@@ -323,6 +318,21 @@ async function startServer() {
         console.log('');
       }
     });
+
+    // Handle server errors
+    server.on('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        console.error(`❌ Port ${PORT} is already in use`);
+        console.error('⚠️  Killing old processes and retrying...');
+        setTimeout(() => {
+          process.exit(1);
+        }, 1000);
+      } else {
+        console.error('❌ Server error:', err);
+        process.exit(1);
+      }
+    });
+
   } catch (err) {
     console.error('❌ Failed to start server:', err.message);
     console.error('');
@@ -335,4 +345,36 @@ async function startServer() {
   }
 }
 
+async function setWebhookAsync() {
+  try {
+    await bot.setWebHook(WEBHOOK_URL);
+    console.log(`✅ Webhook set: ${WEBHOOK_URL}`);
+  } catch (err) {
+    console.warn('⚠️  Could not set webhook:', err.message);
+  }
+}
+
 startServer();
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+  console.log('\n🛑 SIGTERM received, shutting down gracefully...');
+  try {
+    await pool.end();
+    console.log('✅ Database pool closed');
+  } catch (err) {
+    console.error('Error closing database:', err);
+  }
+  process.exit(0);
+});
+
+process.on('SIGINT', async () => {
+  console.log('\n🛑 SIGINT received, shutting down gracefully...');
+  try {
+    await pool.end();
+    console.log('✅ Database pool closed');
+  } catch (err) {
+    console.error('Error closing database:', err);
+  }
+  process.exit(0);
+});
