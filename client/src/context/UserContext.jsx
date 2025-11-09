@@ -10,25 +10,30 @@ export function UserProvider({ children }) {
 
   useEffect(() => {
     // Get Telegram data from WebApp
-    const initializeTelegramApp = () => {
+    const initializeTelegramApp = async () => {
       try {
         if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
           const webApp = window.Telegram.WebApp;
           webApp.ready();
-          
+
+          console.log('Telegram WebApp detected, initDataUnsafe:', webApp.initDataUnsafe);
+
           if (webApp.initDataUnsafe?.user?.id) {
-            setTelegramId(webApp.initDataUnsafe.user.id);
-            initializeUser(webApp.initDataUnsafe.user.id);
+            const userId = webApp.initDataUnsafe.user.id;
+            console.log('Initializing with Telegram ID:', userId);
+            setTelegramId(userId);
+            await initializeUser(userId);
+            return;
           }
         }
       } catch (err) {
         console.error('Telegram init error:', err);
-        // For development, use a test ID
-        if (process.env.NODE_ENV === 'development') {
-          setTelegramId(123456789);
-          initializeUser(123456789);
-        }
       }
+
+      // Fallback: use test ID if no Telegram data
+      console.log('Using fallback test ID');
+      setTelegramId(123456789);
+      await initializeUser(123456789);
     };
 
     initializeTelegramApp();
