@@ -1,5 +1,18 @@
 import { query } from '../db.js';
 
+export async function getUserById(userId) {
+  try {
+    const user = await query(
+      'SELECT * FROM users WHERE id = $1',
+      [userId]
+    );
+    return user.rows[0] || null;
+  } catch (error) {
+    console.error('Error getting user by ID:', error);
+    throw error;
+  }
+}
+
 export async function getOrCreateUser(telegramId, userData = {}) {
   try {
     // Check if user exists
@@ -9,15 +22,36 @@ export async function getOrCreateUser(telegramId, userData = {}) {
     );
 
     if (existingUser.rows.length > 0) {
-      return existingUser.rows[0];
+      const user = existingUser.rows[0];
+
+      // Update user data if provided (from Telegram)
+      if (userData && (userData.username || userData.first_name || userData.last_name || userData.photo_url)) {
+        await query(
+          `UPDATE users
+           SET username = COALESCE($1, username),
+               first_name = COALESCE($2, first_name),
+               last_name = COALESCE($3, last_name),
+               photo_url = COALESCE($4, photo_url),
+               updated_at = CURRENT_TIMESTAMP
+           WHERE telegram_id = $5`,
+          [userData.username, userData.first_name, userData.last_name, userData.photo_url, telegramId]
+        );
+      }
+
+      // Return updated user
+      const updatedUser = await query(
+        'SELECT * FROM users WHERE telegram_id = $1',
+        [telegramId]
+      );
+      return updatedUser.rows[0];
     }
 
-    // Create new user - find next available position in pyramid
+    // Create new user
     const newUser = await query(
-      `INSERT INTO users (telegram_id, username, first_name, last_name)
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO users (telegram_id, username, first_name, last_name, photo_url)
+       VALUES ($1, $2, $3, $4, $5)
        RETURNING *`,
-      [telegramId, userData.username, userData.first_name, userData.last_name]
+      [telegramId, userData?.username, userData?.first_name, userData?.last_name, userData?.photo_url]
     );
 
     return newUser.rows[0];

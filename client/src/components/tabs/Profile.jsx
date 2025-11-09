@@ -8,13 +8,19 @@ export function Profile() {
   return (
     <div className="profile-container">
       <div className="profile-header">
-        <div className="profile-avatar">👤</div>
+        <div className="profile-avatar">
+          {user?.photo_url ? (
+            <img src={user.photo_url} alt="User avatar" className="avatar-image" />
+          ) : (
+            <span className="avatar-placeholder">👤</span>
+          )}
+        </div>
         <div className="profile-name-section">
           <h2 className="profile-name">
             {user?.first_name} {user?.last_name || ''}
           </h2>
           {user?.username && <p className="profile-username">@{user.username}</p>}
-          <p className="profile-id">ID: {user?.telegram_id}</p>
+          <p className="profile-id">ID: {user?.id}</p>
         </div>
       </div>
 

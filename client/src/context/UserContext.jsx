@@ -7,22 +7,26 @@ export function UserProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [telegramId, setTelegramId] = useState(null);
+  const [telegramUser, setTelegramUser] = useState(null);
 
   useEffect(() => {
-    // Get Telegram data from WebApp
     const initializeTelegramApp = async () => {
       try {
         if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
           const webApp = window.Telegram.WebApp;
           webApp.ready();
 
-          console.log('Telegram WebApp detected, initDataUnsafe:', webApp.initDataUnsafe);
+          console.log('Telegram WebApp detected');
 
           if (webApp.initDataUnsafe?.user?.id) {
-            const userId = webApp.initDataUnsafe.user.id;
-            console.log('Initializing with Telegram ID:', userId);
-            setTelegramId(userId);
-            await initializeUser(userId);
+            const tgUser = webApp.initDataUnsafe.user;
+            console.log('Telegram user data:', tgUser);
+
+            setTelegramId(tgUser.id);
+            setTelegramUser(tgUser);
+
+            const referrerId = getStartParam();
+            await initializeUser(tgUser.id, tgUser, referrerId);
             return;
           }
         }
@@ -30,31 +34,55 @@ export function UserProvider({ children }) {
         console.error('Telegram init error:', err);
       }
 
-      // Fallback: use test ID if no Telegram data
-      console.log('Using fallback test ID');
-      setTelegramId(123456789);
-      await initializeUser(123456789);
+      console.warn('No Telegram WebApp detected');
+      setError('Telegram WebApp не инициализирован');
+      setLoading(false);
     };
 
     initializeTelegramApp();
   }, []);
 
-  const initializeUser = async (id) => {
+  const getStartParam = () => {
+    if (typeof window !== 'undefined' && window.Telegram?.WebApp?.initDataUnsafe?.start_param) {
+      return parseInt(window.Telegram.WebApp.initDataUnsafe.start_param);
+    }
+    return null;
+  };
+
+  const initializeUser = async (telegramId, tgUserData = null, referrerId = null) => {
     try {
       setLoading(true);
+      setError(null);
+
+      const payload = {
+        telegramId,
+        userData: tgUserData ? {
+          username: tgUserData.username,
+          first_name: tgUserData.first_name,
+          last_name: tgUserData.last_name,
+          photo_url: tgUserData.photo_url,
+        } : null,
+      };
+
+      if (referrerId) {
+        payload.referrerId = referrerId;
+      }
+
       const response = await fetch('/api/auth/init', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ telegramId: id }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to initialize user');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to initialize user');
       }
 
       const data = await response.json();
+      console.log('User initialized successfully:', data.user);
       setUser(data.user);
       setError(null);
     } catch (err) {
@@ -66,9 +94,9 @@ export function UserProvider({ children }) {
   };
 
   const refreshUser = async () => {
-    if (!telegramId) return;
+    if (!user?.id) return;
     try {
-      const response = await fetch(`/api/auth/user/${telegramId}`);
+      const response = await fetch(`/api/auth/user/${user.id}`);
       if (!response.ok) {
         throw new Error('Failed to fetch user');
       }
@@ -86,6 +114,7 @@ export function UserProvider({ children }) {
         loading,
         error,
         telegramId,
+        telegramUser,
         refreshUser,
         setUser,
       }}

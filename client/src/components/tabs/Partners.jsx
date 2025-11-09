@@ -3,7 +3,7 @@ import { useUser } from '../../context/UserContext';
 import '../styles/Partners.css';
 
 export function Partners() {
-  const { user, telegramId } = useUser();
+  const { user } = useUser();
   const [referrals, setReferrals] = useState([]);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -29,7 +29,7 @@ export function Partners() {
     }
   };
 
-  const referralLink = `https://t.me/cryptoladderbot/miniapp?start=${telegramId}`;
+  const referralLink = user?.id ? `https://t.me/cryptoladderbot/miniapp?start=${user.id}` : '';
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(referralLink);
@@ -38,7 +38,7 @@ export function Partners() {
   };
 
   const shareVia = () => {
-    const text = `🚀 Присоединяйся к Crypto Ladder!\n\nЗарабатывай звёзды⭐️ в революционной пирамиде!\n\n${referralLink}`;
+    const text = `🚀 Присоединяйся к Crypto Ladder!\n\nЗарабатывай звёзды⭐�� в революционной пирамиде!\n\n${referralLink}`;
     const url = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
   };

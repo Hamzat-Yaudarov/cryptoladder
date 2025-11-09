@@ -3,7 +3,7 @@ import { useUser } from '../../context/UserContext';
 import '../styles/Home.css';
 
 export function Home() {
-  const { user, refreshUser } = useUser();
+  const { user, error: initError, refreshUser } = useUser();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -62,6 +62,16 @@ export function Home() {
       setLoading(false);
     }
   };
+
+  if (initError) {
+    return (
+      <div className="home-error">
+        <div className="error-icon">⚠️</div>
+        <p className="error-message">{initError}</p>
+        <p className="error-hint">Убедитесь, что вы открыли приложение через Telegram</p>
+      </div>
+    );
+  }
 
   if (!user) {
     return (
@@ -136,7 +146,7 @@ export function Home() {
               ? '⏳ Активация...'
               : user.is_activated_today
               ? '✅ Активирован на сегодня'
-              : '⚡ Активировать (10 ⭐️)'}
+              : '⚡ Активирова��ь (10 ⭐️)'}
           </button>
         )}
 

@@ -37,6 +37,7 @@ export async function initializeDatabase() {
         username VARCHAR(255),
         first_name VARCHAR(255),
         last_name VARCHAR(255),
+        photo_url TEXT,
         balance DECIMAL(18, 2) DEFAULT 0,
         parent_id INTEGER REFERENCES users(id),
         position_in_parent INTEGER DEFAULT NULL,
