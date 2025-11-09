@@ -1,234 +1,241 @@
-# 🪜 Crypto Ladder - Smart Pyramid with Daily Activation
+# Crypto Ladder 🪜
 
-A Telegram MiniApp that implements a smart pyramid structure where users purchase places, activate daily, and earn stars from their referrals.
+A revolutionary Telegram MiniApp featuring a smart pyramid system with daily activation rewards.
 
-## 📋 Project Overview
+## Project Overview
 
-Crypto Ladder is a social economic system built as a Telegram MiniApp where:
+Crypto Ladder is a social economic MiniApp system where players can:
+- 💰 Earn ⭐️ (stars) from players below them in the pyramid structure
+- 👥 Invite friends and get referral bonuses
+- 📈 Build their own downline and unlock deeper income levels
 
-- Users **buy places** in a 3-branched pyramid (costs 3⭐️)
-- Users **activate daily** to earn stars from their network (costs 10⭐️)
-- Stars are **distributed** across 5 levels of the pyramid
-- Users earn **referral bonuses** for direct invitations
-- Earning depth increases with more referrals
+### Key Features
 
-## 🏗️ Architecture
+✅ **Pyramid Structure**
+- Ternary tree structure (each player can have up to 3 direct subordinates)
+- Automatic distribution of players in pyramid
+- Income only from your direct branch
 
-```
-cryptoladder-bot/
-├── public/                  # MiniApp frontend
-│   ├── index.html          # HTML entry point
-│   └── app.js              # React logic & API calls
-├── src/
-│   ├── server/
-│   │   └── index.js        # Express server & bot handler
-│   ├── db/
-│   │   ├── connection.js   # PostgreSQL connection
-│   │   └── schema.sql      # Database schema
-│   └── services/
-│       ├── userService.js  # User & referral logic
-│       └── activationService.js  # Activation & distribution
-├── scripts/
-│   └── init-db.js          # Database initialization
-├── package.json
-├── Procfile                # Railway deployment config
-├── DEPLOYMENT.md           # Railway setup guide
-└── README.md
-```
+✅ **Daily Activation System**
+- Players pay 10⭐️ daily to receive earnings
+- Distribution: Levels 1-5 get 35%, 21%, 14%, 8%, 4% respectively
+- Remaining goes to the system owner
 
-## 🚀 Quick Start
+✅ **Referral System**
+- Each player gets a unique referral link
+- 0.5⭐��� bonus for each referred player's first activation
+- Bonus repeats with each subsequent activation
+- Referral depth depends on number of invited players
 
-### Local Development
+✅ **MiniApp Interface**
+- 🏠 **Home**: Balance, activation status, pyramid position
+- 👥 **Partners**: Referral management and level information
+- 💸 **Income**: Earnings statistics and breakdown by levels
+- ⚙️ **Profile**: Settings, rules, and help
 
-1. **Install dependencies**
+## Tech Stack
+
+- **Backend**: Node.js + Express
+- **Database**: PostgreSQL (Neon)
+- **Bot Framework**: Telegraf
+- **Frontend**: React + Vite
+- **Deployment**: Railway
+
+## Setup Instructions
+
+### Prerequisites
+- Node.js 16+
+- PostgreSQL database (Neon)
+- Telegram Bot Token
+
+### 1. Clone and Install
+
 ```bash
 npm install
 ```
 
-2. **Set environment variables** (create `.env` file)
-```bash
-TELEGRAM_BOT_TOKEN=your_bot_token_here
-DATABASE_URL=your_neon_connection_string
+### 2. Environment Setup
+
+Create a `.env` file in the root directory:
+
+```env
+DATABASE_URL=postgresql://user:password@host/database
+TELEGRAM_BOT_TOKEN=your_bot_token
 PORT=8080
+NODE_ENV=production
+WEB_APP_URL=https://your-domain.com/
 ```
 
-3. **Initialize database**
-```bash
-npm run init-db
-```
+### 3. Initialize Database
 
-4. **Start server**
+The database schema is automatically created on first run. The server will initialize tables for:
+- Users (with pyramid structure)
+- Activations
+- Referrals
+- Earnings
+- Purchases
+
+### 4. Local Development
+
+Start both server and frontend:
+
 ```bash
 npm run dev
 ```
 
-The MiniApp will be available at `http://localhost:8080`
+The dev server will:
+- Run Express backend on port 8080
+- Start Vite dev server with hot reload
+- Proxy API calls to the backend
 
-### Railway Deployment
-
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions.
-
-## 💰 Economic System
-
-### Buying a Place (One-time)
-- **Cost**: 3⭐️
-- **Reward**: Position in the pyramid
-- **Who gets it**: Creator/Admin receives 100%
-
-### Daily Activation
-- **Cost**: 10⭐️ per day
-- **Payout**: 5⭐️ distributed
-- **Distribution**:
-  - Level 1 (direct supervisor): 35%
-  - Level 2: 21%
-  - Level 3: 14%
-  - Level 4: 8%
-  - Level 5: 4%
-  - Leftover: Goes to creator
-
-### Referral Bonus
-- **Amount**: 0.5⭐️
-- **When**: Every time your referral activates
-- **Note**: Bonus doesn't count against distribution
-
-### Earning Depth
-Based on referral count:
-- 0-14 referrals: 2 levels
-- 15-34 referrals: 3 levels
-- 35-69 referrals: 4 levels
-- 70+ referrals: 5 levels
-
-## 📱 MiniApp Tabs
-
-### 🏠 Home
-- Display balance
-- Show activation status & countdown
-- Buy place button
-- Activate button
-- Quick stats
-
-### 👥 Partners
-- Referral link with copy button
-- List of direct referrals
-- Current earning depth
-- Progress to next tier
-
-### 💸 Income
-- Total earnings display
-- Distribution breakdown chart
-- Recent transactions
-- Referral bonus info
-
-### ⚙️ Profile
-- User information
-- Account status
-- How it works guide
-- Support link
-
-## 🤖 Telegram Bot
-
-### /start Command
-Sends welcome message with MiniApp button
-
-### Referral System
-- Format: `/start ref_<telegram_id>`
-- Creates referral relationship
-- Grants referral bonuses on activation
-
-## 🔌 API Endpoints
-
-### User Data
-- `GET /api/user/:telegramId` - Get user profile
-- `GET /api/user/:telegramId/referrals` - Get referral list
-- `GET /api/user/:telegramId/hierarchy` - Get pyramid structure
-- `GET /api/user/:telegramId/transactions` - Get transaction history
-
-### Actions
-- `POST /api/user/buy-place` - Purchase place in pyramid
-- `POST /api/user/activate` - Activate for the day
-
-### Leaderboard
-- `GET /api/leaderboard` - Top 100 users by stars
-
-## 📊 Database Schema
-
-### users
-- telegram_id (unique)
-- stars (decimal)
-- has_bought_place (boolean)
-- parent_id (pyramid hierarchy)
-- created_at, last_activation
-
-### referrals
-- inviter_id
-- invited_id
-- created_at
-
-### star_transactions
-- user_id
-- amount
-- type (activation_income, referral_bonus, etc)
-- source_user_id
-- level
-- created_at
-
-### activations
-- user_id
-- activated_at
-- expires_at
-- is_active
-
-## 🔐 Security Features
-
-- SSL/TLS for all connections
-- Database SSL required
-- Environment variables for secrets
-- User validation via Telegram
-- Activation cooldown (24 hours)
-- Inactivity freeze after 3 days
-
-## 📈 Pyramid Structure
-
-```
-            [Root User]
-         /      |      \
-    [User1]  [User2]  [User3]
-    /|  |     /|  |     /|  |
-  [A][B][C] [D][E][F] [G][H][I]
-```
-
-- Each user can have up to 3 direct children
-- Automatic distribution left-to-right, top-to-bottom
-- Users only earn from their own branch
-
-## 🛠️ Development
-
-### Add a New Feature
-
-1. Update database schema in `src/db/schema.sql`
-2. Add services in `src/services/`
-3. Add API endpoints in `src/server/index.js`
-4. Update MiniApp UI in `public/app.js`
-
-### Test Bot Locally
+### 5. Build for Production
 
 ```bash
-# Use ngrok for tunnel
-ngrok http 8080
-
-# Set webhook to ngrok URL
-curl -X POST \
-  -F "url=https://your-ngrok-url.ngrok.io/bot/webhook" \
-  https://api.telegram.org/bot<TOKEN>/setWebhook
+npm run build
 ```
 
-## 📞 Support
+This creates optimized builds for both server and frontend.
 
-For issues and questions:
-- Check [DEPLOYMENT.md](./DEPLOYMENT.md)
-- Review Railway logs
-- Test with [BotFather](https://t.me/BotFather)
+## Project Structure
 
-## 📄 License
+```
+├── server/
+│   ├── index.js              # Main server file
+│   ├── bot.js                # Telegram bot setup
+│   ├── db.js                 # Database connection & schema
+│   ├── services/
+│   │   ├── userService.js    # User & pyramid logic
+│   │   └── activationService.js  # Activation & earnings
+│   └── routes/
+│       ├── auth.js           # Authentication endpoints
+│       ├── activation.js     # Activation & purchase endpoints
+│       └── pyramid.js        # Pyramid & referral endpoints
+├── client/
+│   ├── src/
+│   │   ├── main.jsx          # React entry point
+│   │   ├── App.jsx           # Main app component
+│   │   ├── context/
+│   │   │   └── UserContext.jsx   # User state management
+│   │   └── components/
+│   │       ├── tabs/         # Tab components
+│   │       │   ├── Home.jsx
+│   │       │   ├── Partners.jsx
+│   │       │   ├── Income.jsx
+│   │       │   └── Profile.jsx
+│   │       └── styles/       # Component styles
+│   └── index.html
+├── vite.config.js
+├── package.json
+└── .env.example
+```
 
-All rights reserved - Crypto Ladder Team
+## API Endpoints
+
+### Authentication
+- `POST /api/auth/init` - Initialize new user
+- `GET /api/auth/user/:telegramId` - Get user data
+
+### Activation
+- `POST /api/activation/activate/:userId` - Daily activation
+- `POST /api/activation/buy-place/:userId` - Buy pyramid place
+- `GET /api/activation/earnings/:userId` - Get earnings stats
+
+### Pyramid
+- `GET /api/pyramid/structure/:userId` - Get pyramid structure
+- `GET /api/pyramid/downline/:userId` - Get downline users
+- `GET /api/pyramid/referrals/:userId` - Get referral list
+
+## Deployment to Railway
+
+### 1. Push to Git
+```bash
+git add .
+git commit -m "Initial commit"
+git push origin main
+```
+
+### 2. Railway Configuration
+
+Create a `railway.json` in root:
+```json
+{
+  "build": {
+    "builder": "nixpacks"
+  },
+  "deploy": {
+    "numReplicas": 1,
+    "sleepApplication": false
+  }
+}
+```
+
+### 3. Set Environment Variables on Railway
+- `DATABASE_URL` - Your Neon database connection string
+- `TELEGRAM_BOT_TOKEN` - Your bot token
+- `PORT` - Set to 8080
+- `WEB_APP_URL` - Your Railway app domain
+
+### 4. Deploy
+Push to the Railway-connected repository, and it will automatically deploy.
+
+## Neon Database Connection
+
+The project uses Neon PostgreSQL. Your connection string format:
+```
+postgresql://user:password@ep-xxx.c-2.eu-central-1.aws.neon.tech/database?sslmode=require&channel_binding=require
+```
+
+Set this as your `DATABASE_URL` environment variable.
+
+## Telegram Bot Commands
+
+The bot responds to:
+- `/start` - Shows greeting and opens MiniApp button
+- `/help` - Shows game rules and earning system
+
+## Economics Summary
+
+### Purchase
+- **Cost**: 3⭐️ per place
+- **Goes to**: System owner (100%)
+
+### Daily Activation
+- **Cost**: 10⭐️
+- **Distribution of 5⭐️ among referrer tree**:
+  - Level 1: 35% (1.75⭐️)
+  - Level 2: 21% (1.05⭐️)
+  - Level 3: 14% (0.7⭐️)
+  - Level 4: 8% (0.4⭐️)
+  - Level 5: 4% (0.2⭐️)
+  - Remaining: Goes to system owner
+
+### Referral Bonuses
+- **Amount**: 0.5⭐️ per referred player activation
+- **Frequency**: Each time referred player activates
+- **Unlocks levels**: Based on referral count
+  - 0-14: 2 levels
+  - 15-34: 3 levels
+  - 35-69: 4 levels
+  - 70+: 5 levels
+
+## Important Notes
+
+⚠️ **Anti-Fraud Measures**
+- Can only activate if placed in pyramid
+- Can't activate twice in 24 hours
+- Inactive players (>3 days) have frozen branches
+- Only active players receive earnings
+
+🔒 **Security**
+- Telegram WebApp validation
+- Database connection over SSL/TLS
+- Environment variables for sensitive data
+- Input validation on all endpoints
+
+## Support & License
+
+For issues or questions, please contact the project maintainers.
+
+---
+
+**Crypto Ladder © 2024** - A decentralized earning platform

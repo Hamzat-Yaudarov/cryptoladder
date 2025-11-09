@@ -1,27 +1,13 @@
 .config/
-
-# dependencies
 node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# environment
 .env
 .env.local
 .env.*.local
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
 .DS_Store
-Thumbs.db
-
-# misc
+dist/
+build/
+client/dist/
 *.log
-.cache/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
