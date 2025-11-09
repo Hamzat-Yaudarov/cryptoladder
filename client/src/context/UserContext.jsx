@@ -31,10 +31,10 @@ export function UserProvider({ children }) {
           }
         }
       } catch (err) {
-        console.error('Telegram init error:', err);
+        console.error('Ошибка инициализации Telegram:', err);
       }
 
-      console.warn('No Telegram WebApp detected');
+      console.warn('Telegram WebApp не обнаружен');
       setError('Telegram WebApp не инициализирован');
       setLoading(false);
     };
@@ -78,7 +78,7 @@ export function UserProvider({ children }) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to initialize user');
+        throw new Error(errorData.error || 'Не удалось инициализировать пользователя');
       }
 
       const data = await response.json();
@@ -86,7 +86,7 @@ export function UserProvider({ children }) {
       setUser(data.user);
       setError(null);
     } catch (err) {
-      console.error('Error initializing user:', err);
+      console.error('Ошибка при инициализации пользователя:', err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -103,7 +103,7 @@ export function UserProvider({ children }) {
       const userData = await response.json();
       setUser(userData);
     } catch (err) {
-      console.error('Error refreshing user:', err);
+      console.error('Ошибка при обновлении пользователя:', err);
     }
   };
 

@@ -14,29 +14,29 @@ const DISTRIBUTION_LEVELS = {
 
 export async function activateUser(userId) {
   try {
-    // Check if user has enough balance
+    // Проверка баланса пользователя
     const user = await query(
       'SELECT balance FROM users WHERE id = $1',
       [userId]
     );
 
     if (user.rows.length === 0) {
-      throw new Error('User not found');
+      throw new Error('Пользователь не найден');
     }
 
     const userBalance = parseFloat(user.rows[0].balance);
     if (userBalance < ACTIVATION_COST) {
-      throw new Error('Insufficient balance for activation');
+      throw new Error('Недостаточно звёзд для активации');
     }
 
-    // Check if already activated today
+    // Проверка активации сегодня
     const todayActivation = await query(
       'SELECT id FROM activations WHERE user_id = $1 AND DATE(activation_date) = CURRENT_DATE',
       [userId]
     );
 
     if (todayActivation.rows.length > 0) {
-      throw new Error('Already activated today');
+      throw new Error('Вы уже активировались сегодня');
     }
 
     // Create activation record
@@ -60,7 +60,7 @@ export async function activateUser(userId) {
 
     return { success: true, activationCost: ACTIVATION_COST };
   } catch (error) {
-    console.error('Error activating user:', error);
+    console.error('Ошибка при активации пользователя:', error);
     throw error;
   }
 }
@@ -139,7 +139,7 @@ async function distributeEarnings(userId) {
     }
 
   } catch (error) {
-    console.error('Error distributing earnings:', error);
+    console.error('Ошибка при распределении доходов:', error);
     throw error;
   }
 }
@@ -154,7 +154,7 @@ export async function claimReferralBonus(referrerId, referredId) {
     );
 
     if (referral.rows.length === 0) {
-      return { success: false, message: 'Bonus already claimed or referral not found' };
+      return { success: false, message: 'Бонус уже получен или реферрал не найден' };
     }
 
     // Add bonus to referrer balance
@@ -178,7 +178,7 @@ export async function claimReferralBonus(referrerId, referredId) {
 
     return { success: true, bonus: REFERRAL_BONUS };
   } catch (error) {
-    console.error('Error claiming referral bonus:', error);
+    console.error('Ошибка при получении реферрального бонуса:', error);
     throw error;
   }
 }
@@ -192,12 +192,12 @@ export async function buyPlace(userId) {
     );
 
     if (user.rows.length === 0) {
-      throw new Error('User not found');
+      throw new Error('Пользователь не найден');
     }
 
     const userBalance = parseFloat(user.rows[0].balance);
     if (userBalance < PURCHASE_COST) {
-      throw new Error('Insufficient balance for purchase');
+      throw new Error('Недостаточно звёзд для покупки');
     }
 
     // Deduct cost from balance (100% goes to creator)
@@ -221,7 +221,7 @@ export async function buyPlace(userId) {
 
     return { success: true, purchaseCost: PURCHASE_COST };
   } catch (error) {
-    console.error('Error buying place:', error);
+    console.error('Ошибка при покупке места:', error);
     throw error;
   }
 }
@@ -267,7 +267,7 @@ export async function getEarningsStats(userId) {
       referrals: referralStats.rows[0] || { total_referrals: 0, active_referrals: 0 },
     };
   } catch (error) {
-    console.error('Error getting earnings stats:', error);
+    console.error('Ошибка при получении статистики доходов:', error);
     throw error;
   }
 }

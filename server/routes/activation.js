@@ -13,12 +13,12 @@ router.post('/activate/:userId', async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Activation successful',
+      message: 'Активация успешна',
       activationCost: result.activationCost,
       user,
     });
   } catch (error) {
-    console.error('Activation error:', error);
+    console.error('Ошибка активации:', error);
     res.status(400).json({ error: error.message });
   }
 });
@@ -32,12 +32,12 @@ router.post('/buy-place/:userId', async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Place purchased successfully',
+      message: 'Место куплено успешно',
       purchaseCost: result.purchaseCost,
       user,
     });
   } catch (error) {
-    console.error('Buy place error:', error);
+    console.error('Ошибка покупки места:', error);
     res.status(400).json({ error: error.message });
   }
 });
@@ -53,7 +53,7 @@ router.get('/earnings/:userId', async (req, res) => {
       earnings: stats,
     });
   } catch (error) {
-    console.error('Get earnings error:', error);
+    console.error('Ошибка получения статистики доходов:', error);
     res.status(500).json({ error: error.message });
   }
 });

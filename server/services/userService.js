@@ -8,7 +8,7 @@ export async function getUserById(userId) {
     );
     return user.rows[0] || null;
   } catch (error) {
-    console.error('Error getting user by ID:', error);
+    console.error('Ошибка при получении пользователя по ID:', error);
     throw error;
   }
 }
@@ -25,20 +25,38 @@ export async function getOrCreateUser(telegramId, userData = {}) {
       const user = existingUser.rows[0];
 
       // Update user data if provided (from Telegram)
-      if (userData && (userData.username || userData.first_name || userData.last_name || userData.photo_url)) {
-        await query(
-          `UPDATE users
-           SET username = COALESCE($1, username),
-               first_name = COALESCE($2, first_name),
-               last_name = COALESCE($3, last_name),
-               photo_url = COALESCE($4, photo_url),
-               updated_at = CURRENT_TIMESTAMP
-           WHERE telegram_id = $5`,
-          [userData.username, userData.first_name, userData.last_name, userData.photo_url, telegramId]
-        );
+      if (userData && (userData.username || userData.first_name || userData.last_name)) {
+        try {
+          // Try to update with photo_url if it exists
+          await query(
+            `UPDATE users
+             SET username = COALESCE($1, username),
+                 first_name = COALESCE($2, first_name),
+                 last_name = COALESCE($3, last_name),
+                 photo_url = COALESCE($4, photo_url),
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE telegram_id = $5`,
+            [userData.username, userData.first_name, userData.last_name, userData.photo_url, telegramId]
+          );
+        } catch (updateError) {
+          // If photo_url column doesn't exist, update without it
+          if (updateError.message.includes('column "photo_url" does not exist')) {
+            await query(
+              `UPDATE users
+               SET username = COALESCE($1, username),
+                   first_name = COALESCE($2, first_name),
+                   last_name = COALESCE($3, last_name),
+                   updated_at = CURRENT_TIMESTAMP
+               WHERE telegram_id = $4`,
+              [userData.username, userData.first_name, userData.last_name, telegramId]
+            );
+          } else {
+            throw updateError;
+          }
+        }
       }
 
-      // Return updated user
+      // Вернуть обновленного пользователя
       const updatedUser = await query(
         'SELECT * FROM users WHERE telegram_id = $1',
         [telegramId]
@@ -46,17 +64,31 @@ export async function getOrCreateUser(telegramId, userData = {}) {
       return updatedUser.rows[0];
     }
 
-    // Create new user
-    const newUser = await query(
-      `INSERT INTO users (telegram_id, username, first_name, last_name, photo_url)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING *`,
-      [telegramId, userData?.username, userData?.first_name, userData?.last_name, userData?.photo_url]
-    );
-
-    return newUser.rows[0];
+    // Создание нового пользователя - сначала попытка с photo_url
+    try {
+      const newUser = await query(
+        `INSERT INTO users (telegram_id, username, first_name, last_name, photo_url)
+         VALUES ($1, $2, $3, $4, $5)
+         RETURNING *`,
+        [telegramId, userData?.username, userData?.first_name, userData?.last_name, userData?.photo_url]
+      );
+      return newUser.rows[0];
+    } catch (insertError) {
+      // Если колонка photo_url не существует, вставить без неё
+      if (insertError.message.includes('column "photo_url" does not exist')) {
+        const newUser = await query(
+          `INSERT INTO users (telegram_id, username, first_name, last_name)
+           VALUES ($1, $2, $3, $4)
+           RETURNING *`,
+          [telegramId, userData?.username, userData?.first_name, userData?.last_name]
+        );
+        return newUser.rows[0];
+      } else {
+        throw insertError;
+      }
+    }
   } catch (error) {
-    console.error('Error getting or creating user:', error);
+    console.error('Ошибка при создании или получении пользователя:', error);
     throw error;
   }
 }
@@ -107,7 +139,7 @@ export async function assignParentAndPosition(userId, referrerId = null) {
 
     return { parentId, position: parentId ? (children?.rows?.length + 1 || 1) : 0 };
   } catch (error) {
-    console.error('Error assigning parent and position:', error);
+    console.error('Ошибка при назначении родителя и позиции:', error);
     throw error;
   }
 }
@@ -152,7 +184,7 @@ export async function getUserWithStats(userId) {
       is_activated_today: activation.rows.length > 0,
     };
   } catch (error) {
-    console.error('Error getting user with stats:', error);
+    console.error('Ошибка при получении пользователя со статистикой:', error);
     throw error;
   }
 }
@@ -178,7 +210,7 @@ export async function getUserPyramidStructure(userId, depth = 3) {
 
     return structure.rows;
   } catch (error) {
-    console.error('Error getting user pyramid structure:', error);
+    console.error('Ошибка при получении структуры пирамиды:', error);
     throw error;
   }
 }
@@ -204,7 +236,7 @@ export async function getDownlineUsers(userId, maxLevel = 5) {
 
     return downline.rows;
   } catch (error) {
-    console.error('Error getting downline users:', error);
+    console.error('Ошибка при получении пользователей в подчинении:', error);
     throw error;
   }
 }
@@ -221,7 +253,7 @@ export async function addReferral(referrerId, referredId) {
 
     return result.rows[0] || null;
   } catch (error) {
-    console.error('Error adding referral:', error);
+    console.error('Ошибка при добавлении реферала:', error);
     throw error;
   }
 }

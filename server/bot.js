@@ -8,9 +8,10 @@ export function createBot(token, webAppUrl) {
     try {
       const telegramId = ctx.from.id;
       const userData = {
-        username: ctx.from.username,
-        first_name: ctx.from.first_name,
-        last_name: ctx.from.last_name,
+        username: ctx.from.username || null,
+        first_name: ctx.from.first_name || null,
+        last_name: ctx.from.last_name || null,
+        photo_url: ctx.from.photo_url || null,
       };
 
       // Get or create user

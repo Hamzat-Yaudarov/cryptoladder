@@ -8,7 +8,7 @@ router.post('/init', async (req, res) => {
     const { telegramId, userData, referrerId } = req.body;
 
     if (!telegramId) {
-      return res.status(400).json({ error: 'Telegram ID is required' });
+      return res.status(400).json({ error: 'ID Telegram обязателен' });
     }
 
     // Get or create user with Telegram data
@@ -44,7 +44,7 @@ router.post('/init', async (req, res) => {
       user: userWithStats,
     });
   } catch (error) {
-    console.error('Auth init error:', error);
+    console.error('Ошибка инициализации авторизации:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -56,12 +56,12 @@ router.get('/user/:userId', async (req, res) => {
     const userWithStats = await getUserWithStats(parseInt(userId));
 
     if (!userWithStats) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: 'Пользователь не найден' });
     }
 
     res.json(userWithStats);
   } catch (error) {
-    console.error('Get user error:', error);
+    console.error('Ошибка получения пользователя:', error);
     res.status(500).json({ error: error.message });
   }
 });

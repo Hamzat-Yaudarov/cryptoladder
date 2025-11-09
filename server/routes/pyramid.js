@@ -15,7 +15,7 @@ router.get('/structure/:userId', async (req, res) => {
       structure,
     });
   } catch (error) {
-    console.error('Get pyramid structure error:', error);
+    console.error('Ошибка получения структуры пирамиды:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -32,7 +32,7 @@ router.get('/downline/:userId', async (req, res) => {
       downline,
     });
   } catch (error) {
-    console.error('Get downline error:', error);
+    console.error('Ошибка получения подчинённых:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -53,7 +53,7 @@ router.get('/referrals/:userId', async (req, res) => {
       ...data,
     });
   } catch (error) {
-    console.error('Get referrals error:', error);
+    console.error('Ошибка получения рефералов:', error);
     res.status(500).json({ error: error.message });
   }
 });

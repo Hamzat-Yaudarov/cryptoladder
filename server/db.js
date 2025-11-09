@@ -28,8 +28,9 @@ export async function query(text, params) {
 
 export async function initializeDatabase() {
   try {
-    console.log('Initializing database schema...');
+    console.log('Инициализация схемы базы данных...');
 
+    // Создание таблиц
     await query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -37,7 +38,6 @@ export async function initializeDatabase() {
         username VARCHAR(255),
         first_name VARCHAR(255),
         last_name VARCHAR(255),
-        photo_url TEXT,
         balance DECIMAL(18, 2) DEFAULT 0,
         parent_id INTEGER REFERENCES users(id),
         position_in_parent INTEGER DEFAULT NULL,
@@ -91,31 +91,65 @@ export async function initializeDatabase() {
       );
     `);
 
+    // Добавление недостающих колонок в существующие таблицы
+    await addColumnIfNotExists('users', 'photo_url', 'TEXT');
+
+    // Создание индексов
     await createIndexIfNotExists('idx_users_telegram_id', 'users', 'telegram_id');
     await createIndexIfNotExists('idx_users_parent_id', 'users', 'parent_id');
     await createIndexIfNotExists('idx_activations_user_id', 'activations', 'user_id');
     await createIndexIfNotExists('idx_referrals_referrer_id', 'referrals', 'referrer_id');
     await createIndexIfNotExists('idx_earnings_user_id', 'earnings', 'user_id');
 
-    console.log('Database schema initialized successfully');
+    console.log('Схема базы данных инициализирована успешно');
   } catch (error) {
-    console.error('Failed to initialize database:', error);
+    console.error('Ошибка инициализации базы данных:', error);
     throw error;
+  }
+}
+
+async function addColumnIfNotExists(tableName, columnName, columnType) {
+  try {
+    const checkColumn = await query(
+      `SELECT 1 FROM information_schema.columns
+       WHERE table_name = $1 AND column_name = $2`,
+      [tableName, columnName]
+    );
+
+    if (checkColumn.rows.length === 0) {
+      await query(`ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${columnType};`);
+      console.log(`Колонка ${columnName} добавлена в таблицу ${tableName}`);
+    }
+  } catch (error) {
+    console.warn(`Предупреждение: не удалось добавить колонку ${columnName}:`, error.message);
   }
 }
 
 async function createIndexIfNotExists(indexName, tableName, columnName) {
   try {
+    // Проверка существования индекса
     const checkIndex = await query(
       `SELECT 1 FROM pg_indexes WHERE indexname = $1`,
       [indexName]
     );
 
     if (checkIndex.rows.length === 0) {
-      await query(`CREATE INDEX ${indexName} ON ${tableName}(${columnName});`);
+      // Проверка существования колонки перед созданием индекса
+      const checkColumn = await query(
+        `SELECT 1 FROM information_schema.columns
+         WHERE table_name = $1 AND column_name = $2`,
+        [tableName, columnName]
+      );
+
+      if (checkColumn.rows.length > 0) {
+        await query(`CREATE INDEX ${indexName} ON ${tableName}(${columnName});`);
+        console.log(`Индекс ${indexName} создан`);
+      } else {
+        console.warn(`Предупреждение: колонка ${columnName} не существует в таблице ${tableName}, индекс не создан`);
+      }
     }
   } catch (error) {
-    console.warn(`Warning: Could not create index ${indexName}:`, error.message);
+    console.warn(`Предупре��дение: не удалось создать индекс ${indexName}:`, error.message);
   }
 }
 
