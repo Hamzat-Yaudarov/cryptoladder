@@ -331,13 +331,7 @@ async function startServer() {
     console.error('2. Verify DATABASE_URL format');
     console.error('3. Check Railway logs for more details');
     console.error('');
-    // Don't exit - try to keep server running for diagnostics
-    console.log('⚠️  Server starting in limited mode...');
-
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT} (limited mode)`);
-      console.log('📧 Check logs for database connection details');
-    });
+    process.exit(1);
   }
 }
 
