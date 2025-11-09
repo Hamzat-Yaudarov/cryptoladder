@@ -83,7 +83,7 @@ bot.onText(/\/start(?:\s+(.+))?/, async (msg, match) => {
     await bot.sendMessage(userId,
       `👋 Welcome to Crypto Ladder!\n\n` +
       `🪜 Buy your place in the pyramid, activate daily, and earn ⭐️ stars!\n\n` +
-      `�� Your Referral Link: https://t.me/cryptoladderbot/miniapp?startapp=ref_${userId}\n\n` +
+      `💎 Your Referral Link: https://t.me/cryptoladderbot/miniapp?startapp=ref_${userId}\n\n` +
       `Click the button below to open the MiniApp:`,
       { reply_markup: keyboard }
     );
@@ -282,8 +282,11 @@ const PORT = process.env.PORT || 8080;
 
 async function startServer() {
   try {
-    // Initialize database
-    await initializeDatabase();
+    console.log('🚀 Starting Crypto Ladder server...');
+    console.log('');
+
+    // Initialize database (don't fail if it's not available)
+    const dbReady = await initializeDatabase();
     console.log('');
 
     // Start Express server
@@ -292,7 +295,7 @@ async function startServer() {
       console.log(`🌐 App URL: https://cryptoladder-production.up.railway.app`);
       console.log(`🤖 Bot: @cryptoladderbot`);
       console.log(`📱 MiniApp: https://t.me/cryptoladderbot/miniapp`);
-      console.log(`💾 Database: Connected`);
+      console.log(`💾 Database: ${dbReady ? '✅ Connected' : '⚠️  Unavailable (limited mode)'}`);
       console.log('');
 
       // Set webhook in production
@@ -309,10 +312,32 @@ async function startServer() {
 
       console.log('✅ Crypto Ladder is ready!');
       console.log('');
+
+      if (!dbReady) {
+        console.log('⚠️  DATABASE NOT CONNECTED');
+        console.log('📋 Fix checklist:');
+        console.log('1. Check Railway environment variables');
+        console.log('2. Verify DATABASE_URL is set correctly');
+        console.log('3. Check Neon database status');
+        console.log('4. Restart the deployment');
+        console.log('');
+      }
     });
   } catch (err) {
-    console.error('❌ Failed to start server:', err);
-    process.exit(1);
+    console.error('❌ Failed to start server:', err.message);
+    console.error('');
+    console.error('📋 Troubleshooting:');
+    console.error('1. Check that all environment variables are set');
+    console.error('2. Verify DATABASE_URL format');
+    console.error('3. Check Railway logs for more details');
+    console.error('');
+    // Don't exit - try to keep server running for diagnostics
+    console.log('⚠️  Server starting in limited mode...');
+
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT} (limited mode)`);
+      console.log('📧 Check logs for database connection details');
+    });
   }
 }
 

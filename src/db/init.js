@@ -7,24 +7,33 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export async function initializeDatabase() {
-  const client = await pool.connect();
-  
+  let client;
+
   try {
-    console.log('📦 Initializing database schema...');
-    
+    console.log('📦 Connecting to database...');
+
+    // Try to connect with timeout
+    const connectPromise = pool.connect();
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Connection timeout')), 10000)
+    );
+
+    client = await Promise.race([connectPromise, timeoutPromise]);
+    console.log('✅ Database connected');
+
     // Read schema file
     const schemaPath = path.join(__dirname, 'schema.sql');
     const schema = fs.readFileSync(schemaPath, 'utf8');
-    
+
     // Split by semicolons and execute each statement
     const statements = schema.split(';').filter(s => s.trim());
-    
+
     for (const statement of statements) {
       if (statement.trim()) {
         await client.query(statement);
       }
     }
-    
+
     console.log('✅ Database schema initialized');
 
     // Create root admin user if it doesn't exist
@@ -52,14 +61,25 @@ export async function initializeDatabase() {
     console.log(`📊 Tables: ${tableNames.join(', ')}`);
 
     return true;
-    
+
   } catch (err) {
-    console.error('❌ Database initialization failed:', err.message);
+    console.error('⚠️  Database initialization warning:', err.message);
+    console.error('🔍 Diagnostics:');
+    console.error('   - Check DATABASE_URL environment variable');
+    console.error('   - Verify Neon database is accessible');
+    console.error('   - Check that connection string is correct');
+    console.error('   - Server will continue without database (read-only mode)');
     // Don't throw - just log and continue
-    // Database might already be initialized
+    // Database might be initialized later or server might work in limited mode
     return false;
   } finally {
-    client.release();
+    if (client) {
+      try {
+        client.release();
+      } catch (e) {
+        // Ignore release errors
+      }
+    }
   }
 }
 
