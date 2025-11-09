@@ -56,7 +56,7 @@ export async function getOrCreateUser(telegramId, userData = {}) {
         }
       }
 
-      // Вернуть обновленного пользователя
+      // Вернуть обновленного по��ьзователя
       const updatedUser = await query(
         'SELECT * FROM users WHERE telegram_id = $1',
         [telegramId]
@@ -96,13 +96,15 @@ export async function getOrCreateUser(telegramId, userData = {}) {
 export async function assignParentAndPosition(userId, referrerId = null) {
   try {
     let parentId = referrerId;
+    let children = null;
+    let position = 0;
 
     if (!parentId) {
       // Find root user (creator) or create default structure
       const rootUser = await query(
         'SELECT id FROM users WHERE parent_id IS NULL LIMIT 1'
       );
-      
+
       if (rootUser.rows.length > 0) {
         parentId = rootUser.rows[0].id;
       } else {
@@ -113,12 +115,12 @@ export async function assignParentAndPosition(userId, referrerId = null) {
 
     if (parentId) {
       // Find first available position in parent's children
-      const children = await query(
+      children = await query(
         'SELECT position_in_parent FROM users WHERE parent_id = $1 ORDER BY position_in_parent',
         [parentId]
       );
 
-      let position = 1;
+      position = 1;
       if (children.rows.length > 0) {
         const occupiedPositions = children.rows.map(c => c.position_in_parent || 0);
         for (let i = 1; i <= 3; i++) {
@@ -134,10 +136,13 @@ export async function assignParentAndPosition(userId, referrerId = null) {
           'UPDATE users SET parent_id = $1, position_in_parent = $2 WHERE id = $3',
           [parentId, position, userId]
         );
+      } else {
+        // Parent has no free slots; leave position as 0 - caller may handle further placement
+        position = 0;
       }
     }
 
-    return { parentId, position: parentId ? (children?.rows?.length + 1 || 1) : 0 };
+    return { parentId, position };
   } catch (error) {
     console.error('Ошибка при назначении родителя и позиции:', error);
     throw error;
