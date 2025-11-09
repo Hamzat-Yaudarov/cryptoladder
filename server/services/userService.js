@@ -24,29 +24,26 @@ export async function getOrCreateUser(telegramId, userData = {}) {
     if (existingUser.rows.length > 0) {
       const user = existingUser.rows[0];
 
-      // Update user data if provided (from Telegram)
+      // Обновление данных пользователя если предоставлены
       if (userData && (userData.username || userData.first_name || userData.last_name)) {
         try {
-          // Try to update with photo_url if it exists
           await query(
             `UPDATE users
              SET username = COALESCE($1, username),
                  first_name = COALESCE($2, first_name),
                  last_name = COALESCE($3, last_name),
-                 photo_url = COALESCE($4, photo_url),
-                 updated_at = CURRENT_TIMESTAMP
+                 photo_url = COALESCE($4, photo_url)
              WHERE telegram_id = $5`,
             [userData.username, userData.first_name, userData.last_name, userData.photo_url, telegramId]
           );
         } catch (updateError) {
-          // If photo_url column doesn't exist, update without it
+          // Если колонка photo_url не существует, обновить без неё
           if (updateError.message.includes('column "photo_url" does not exist')) {
             await query(
               `UPDATE users
                SET username = COALESCE($1, username),
                    first_name = COALESCE($2, first_name),
-                   last_name = COALESCE($3, last_name),
-                   updated_at = CURRENT_TIMESTAMP
+                   last_name = COALESCE($3, last_name)
                WHERE telegram_id = $4`,
               [userData.username, userData.first_name, userData.last_name, telegramId]
             );
