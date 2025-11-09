@@ -10,36 +10,52 @@ export function UserProvider({ children }) {
   const [telegramUser, setTelegramUser] = useState(null);
 
   useEffect(() => {
+    let isMounted = true;
+
+    const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+
     const initializeTelegramApp = async () => {
       try {
-        if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
-          const webApp = window.Telegram.WebApp;
-          webApp.ready();
+        // Retry for up to 3 seconds to allow Telegram to inject WebApp object
+        const start = Date.now();
+        while (Date.now() - start < 3000) {
+          if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
+            const webApp = window.Telegram.WebApp;
+            try {
+              webApp.ready();
+              webApp.expand?.();
+            } catch {}
 
-          console.log('Telegram WebApp detected');
+            console.log('Telegram WebApp detected');
 
-          if (webApp.initDataUnsafe?.user?.id) {
-            const tgUser = webApp.initDataUnsafe.user;
-            console.log('Telegram user data:', tgUser);
+            if (webApp.initDataUnsafe?.user?.id) {
+              const tgUser = webApp.initDataUnsafe.user;
+              console.log('Telegram user data:', tgUser);
 
-            setTelegramId(tgUser.id);
-            setTelegramUser(tgUser);
+              if (!isMounted) return;
+              setTelegramId(tgUser.id);
+              setTelegramUser(tgUser);
 
-            const referrerId = getStartParam();
-            await initializeUser(tgUser.id, tgUser, referrerId);
-            return;
+              const referrerId = getStartParam();
+              await initializeUser(tgUser.id, tgUser, referrerId);
+              return;
+            }
           }
+          await delay(100);
         }
       } catch (err) {
         console.error('Ошибка инициализации Telegram:', err);
       }
 
+      if (!isMounted) return;
       console.warn('Telegram WebApp не обнаружен');
       setError('Telegram WebApp не инициализирован');
       setLoading(false);
     };
 
     initializeTelegramApp();
+
+    return () => { isMounted = false; };
   }, []);
 
   const getStartParam = () => {
