@@ -87,24 +87,25 @@ async function distributeEarnings(userId) {
 
     const uplineUsers = userPath.rows;
     let totalDistributed = 0;
-    const distributionAmount = 5; // 50% of 10 stars
+    const distributionBase = ACTIVATION_COST * 0.5; // base stars to distribute (e.g., 5 if ACTIVATION_COST=10)
 
     // Distribute to each level
     for (let i = 0; i < uplineUsers.length && i < 5; i++) {
       const level = i + 1;
       const uplineUserId = uplineUsers[i].id;
       const percentage = DISTRIBUTION_LEVELS[level] || 0;
-      const amount = (distributionAmount * percentage);
+      let amount = parseFloat((distributionBase * percentage).toFixed(2));
 
       if (amount > 0) {
-        // Check if upline user is active
+        // Check if upline user is active (expiry in future)
         const isActive = await query(
-          `SELECT 1 FROM activations 
-           WHERE user_id = $1 AND expiry_date > CURRENT_TIMESTAMP`,
+          `SELECT 1 FROM activations
+           WHERE user_id = $1 AND expiry_date >= CURRENT_TIMESTAMP`,
           [uplineUserId]
         );
 
         if (isActive.rows.length > 0) {
+          // Credit amount
           await query(
             `UPDATE users SET balance = balance + $1 WHERE id = $2`,
             [amount, uplineUserId]
@@ -116,13 +117,13 @@ async function distributeEarnings(userId) {
             [uplineUserId, userId, level, amount]
           );
 
-          totalDistributed += amount;
+          totalDistributed = parseFloat((totalDistributed + amount).toFixed(2));
         }
       }
     }
 
     // Remaining goes to creator
-    const creatorAmount = distributionAmount - totalDistributed;
+    const creatorAmount = parseFloat((distributionBase - totalDistributed).toFixed(2));
     const creatorId = 1; // Assuming creator is user with id 1
 
     if (creatorAmount > 0) {
