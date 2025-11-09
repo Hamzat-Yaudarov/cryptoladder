@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useUser } from '../../context/UserContext';
 import '../styles/Home.css';
 
@@ -6,7 +6,6 @@ export function Home() {
   const { user, error: initError, refreshUser } = useUser();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const [structure, setStructure] = useState([]);
 
   const handleActivate = async () => {
     if (!user?.id) return;
@@ -29,7 +28,6 @@ export function Home() {
 
       setMessage('✅ Активация успешна!');
       await refreshUser();
-      await loadStructure();
     } catch (error) {
       setMessage(`❌ Ошибка: ${error.message}`);
     } finally {
@@ -58,29 +56,12 @@ export function Home() {
 
       setMessage('✅ Место куплено!');
       await refreshUser();
-      await loadStructure();
     } catch (error) {
       setMessage(`❌ Ошибка: ${error.message}`);
     } finally {
       setLoading(false);
     }
   };
-
-  const loadStructure = async () => {
-    if (!user?.id) return;
-    try {
-      const resp = await fetch(`/api/pyramid/structure/${user.id}?depth=3`);
-      if (!resp.ok) return;
-      const data = await resp.json();
-      setStructure(data.structure || []);
-    } catch (err) {
-      console.error('Error loading structure:', err);
-    }
-  };
-
-  useEffect(() => {
-    loadStructure();
-  }, [user?.id]);
 
   if (initError) {
     return (
@@ -104,36 +85,6 @@ export function Home() {
   const balance = parseFloat(user.balance || 0);
   const statusText = user.is_activated_today ? '✅ Активирован' : '⏳ Неактивирован';
   const statusClass = user.is_activated_today ? 'active' : 'inactive';
-
-  const buildTree = (nodes) => {
-    const map = {};
-    nodes.forEach((n) => { map[n.id] = { ...n, children: [] }; });
-    let root = map[user.id] || null;
-    nodes.forEach((n) => {
-      if (n.parent_id && map[n.parent_id]) {
-        map[n.parent_id].children.push(map[n.id]);
-      }
-    });
-    return root ? [root] : [];
-  };
-
-  const renderNode = (node) => {
-    return (
-      <li key={node.id} className="pyramid-node">
-        <div className="node-card">
-          <div className="node-name">{node.username || `#${node.telegram_id}`}</div>
-          <div className="node-meta">{node.position_in_parent ? `pos ${node.position_in_parent}` : ''}</div>
-        </div>
-        {node.children && node.children.length > 0 && (
-          <ul className="pyramid-children">
-            {node.children.map((c) => renderNode(c))}
-          </ul>
-        )}
-      </li>
-    );
-  };
-
-  const tree = buildTree(structure);
 
   return (
     <div className="home-container">
@@ -169,44 +120,58 @@ export function Home() {
       </div>
 
       <div className="action-buttons">
-        {/* Always show buy place when user is not in structure; disable if insufficient balance */}
-        {!user.parent_id && (
+        {balance < 3 && (
+          <div className="info-message">
+            💡 Для участия нужно пополнить баланс на 3 ⭐️
+          </div>
+        )}
+
+        {balance >= 3 && !user.parent_id && (
           <button
             className="btn btn-primary"
             onClick={handleBuyPlace}
-            disabled={loading || balance < 3}
-            title={balance < 3 ? 'Недостаточно звёзд (нужно 3)' : 'Купить место (3 ⭐️)'}
+            disabled={loading}
           >
             {loading ? '⏳ Покупка...' : '🏆 Купить место (3 ⭐️)'}
           </button>
         )}
 
-        {/* Activation button is visible when user has a place in structure */}
-        {user.parent_id && (
+        {user.parent_id && balance >= 10 && (
           <button
             className="btn btn-success"
             onClick={handleActivate}
-            disabled={loading || user.is_activated_today || balance < 10}
-            title={balance < 10 ? 'Недостаточно звёзд (нужно 10)' : 'Активировать (10 ⭐️)'}
+            disabled={loading || user.is_activated_today}
           >
             {loading
               ? '⏳ Активация...'
               : user.is_activated_today
               ? '✅ Активирован на сегодня'
-              : '⚡ Активировать (10 ⭐️)'}
+              : '⚡ Активирова��ь (10 ⭐️)'}
           </button>
         )}
 
-        {message && <div className="message-alert">{message}</div>}
+        {user.parent_id && balance < 10 && (
+          <div className="info-message">
+            ⚠️ Недостаточно звёзд для активации (нужно 10)
+          </div>
+        )}
       </div>
+
+      {message && <div className="message-alert">{message}</div>}
 
       <div className="structure-preview">
         <h3>📊 Ваша позиция</h3>
         <div className="pyramid-position">
-          {tree.length === 0 ? (
-            <div className="position-info">⏳ Структура недоступна</div>
+          {user.parent_id ? (
+            <div className="position-info">
+              ✅ Вы в структуре пирамиды
+              <br />
+              <small>Позиция: {user.position_in_parent}/3</small>
+            </div>
           ) : (
-            <ul className="pyramid-root">{tree.map((n) => renderNode(n))}</ul>
+            <div className="position-info">
+              ⏳ Купите место, чтобы присоединиться к пирамиде
+            </div>
           )}
         </div>
       </div>

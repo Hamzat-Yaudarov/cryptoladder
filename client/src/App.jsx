@@ -8,10 +8,7 @@ import './App.css';
 
 function AppContent() {
   const [activeTab, setActiveTab] = useState('home');
-  const { loading, error, user, telegramId, telegramUser } = useUser();
-
-  const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
-  const debug = params.get('debug') === '1';
+  const { loading } = useUser();
 
   if (loading) {
     return (
@@ -24,19 +21,6 @@ function AppContent() {
 
   return (
     <div className="app-wrapper">
-      {debug && (
-        <div style={{position: 'fixed', right: 10, top: 10, zIndex: 9999, background: 'rgba(0,0,0,0.6)', color: '#fff', padding: 8, borderRadius: 6, maxWidth: 360, fontSize: 12}}>
-          <div style={{fontWeight: 'bold', marginBottom: 6}}>DEBUG</div>
-          <div><strong>error:</strong> {error ? String(error) : 'null'}</div>
-          <div><strong>telegramId:</strong> {String(telegramId || 'null')}</div>
-          <div><strong>userId:</strong> {String(user?.id || 'null')}</div>
-          <details style={{color:'#fff', marginTop:6}}>
-            <summary style={{cursor:'pointer'}}>state</summary>
-            <pre style={{whiteSpace:'pre-wrap', maxHeight: 200, overflow: 'auto'}}>{JSON.stringify({user, telegramUser}, null, 2)}</pre>
-          </details>
-        </div>
-      )}
-
       <div className="app-content">
         {activeTab === 'home' && <Home />}
         {activeTab === 'partners' && <Partners />}
