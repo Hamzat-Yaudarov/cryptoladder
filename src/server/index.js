@@ -278,7 +278,13 @@ app.get('/api/leaderboard', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 8080;
+// Use dynamic port if 8080 is taken
+let PORT = process.env.PORT || 8080;
+if (process.env.RAILWAY_PUBLIC_DOMAIN) {
+  // Railway sets this when the app is running
+  // Use the port Railway tells us to use
+  PORT = process.env.PORT || 8080;
+}
 
 async function startServer() {
   try {
@@ -323,13 +329,15 @@ async function startServer() {
     server.on('error', (err) => {
       if (err.code === 'EADDRINUSE') {
         console.error(`❌ Port ${PORT} is already in use`);
-        console.error('⚠️  Killing old processes and retrying...');
+        console.error('⚠️  Exiting - Railway will restart the container...');
         setTimeout(() => {
           process.exit(1);
-        }, 1000);
+        }, 500);
       } else {
         console.error('❌ Server error:', err);
-        process.exit(1);
+        setTimeout(() => {
+          process.exit(1);
+        }, 500);
       }
     });
 
