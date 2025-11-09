@@ -93,7 +93,6 @@ export async function initializeDatabase() {
 
     // Добавление недостающих колонок в существующие таблицы
     await addColumnIfNotExists('users', 'photo_url', 'TEXT');
-    await addColumnIfNotExists('users', 'updated_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP');
 
     // Создание индексов
     await createIndexIfNotExists('idx_users_telegram_id', 'users', 'telegram_id');
