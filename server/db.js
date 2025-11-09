@@ -18,10 +18,9 @@ export async function query(text, params) {
   try {
     const res = await pool.query(text, params);
     const duration = Date.now() - start;
-    console.log('Executed query', { text, duration, rows: res.rowCount });
     return res;
   } catch (error) {
-    console.error('Database query error:', error);
+    console.error('Ошибка запроса к БД:', error);
     throw error;
   }
 }
@@ -30,7 +29,31 @@ export async function initializeDatabase() {
   try {
     console.log('Инициализация схемы базы данных...');
 
-    // Создание таблиц
+    // Проверка существования колонки referrer_id в таблице referrals
+    const checkReferralSchema = await query(
+      `SELECT EXISTS(SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'referrals' AND column_name = 'referrer_id');`
+    );
+
+    const referralHasCorrectSchema = checkReferralSchema.rows[0].exists;
+
+    if (!referralHasCorrectSchema) {
+      console.log('Обнаружена старая схема БД, пересоздаю таблицы...');
+
+      // Удаление старых таблиц в правильном порядке (с зависимостями)
+      try {
+        await query('DROP TABLE IF EXISTS purchases CASCADE;');
+        await query('DROP TABLE IF EXISTS earnings CASCADE;');
+        await query('DROP TABLE IF EXISTS activations CASCADE;');
+        await query('DROP TABLE IF EXISTS referrals CASCADE;');
+        await query('DROP TABLE IF EXISTS users CASCADE;');
+        console.log('✓ Старые таблицы удалены');
+      } catch (dropError) {
+        console.warn('Предупреждение при удалении таблиц:', dropError.message);
+      }
+    }
+
+    // Создание таблиц с правильной схемой (CREATE TABLE IF NOT EXISTS)
     await query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -38,6 +61,7 @@ export async function initializeDatabase() {
         username VARCHAR(255),
         first_name VARCHAR(255),
         last_name VARCHAR(255),
+        photo_url TEXT,
         balance DECIMAL(18, 2) DEFAULT 0,
         parent_id INTEGER REFERENCES users(id),
         position_in_parent INTEGER DEFAULT NULL,
@@ -91,8 +115,7 @@ export async function initializeDatabase() {
       );
     `);
 
-    // Добавление недостающих колонок в существующие таблицы
-    await addColumnIfNotExists('users', 'photo_url', 'TEXT');
+    console.log('✓ Все таблицы готовы');
 
     // Создание индексов
     await createIndexIfNotExists('idx_users_telegram_id', 'users', 'telegram_id');
@@ -101,7 +124,7 @@ export async function initializeDatabase() {
     await createIndexIfNotExists('idx_referrals_referrer_id', 'referrals', 'referrer_id');
     await createIndexIfNotExists('idx_earnings_user_id', 'earnings', 'user_id');
 
-    console.log('Схема базы данных инициализирована успешно');
+    console.log('✓ Схема базы данных инициализирована успешно');
   } catch (error) {
     console.error('Ошибка инициализации базы данных:', error);
     throw error;
@@ -117,11 +140,14 @@ async function addColumnIfNotExists(tableName, columnName, columnType) {
     );
 
     if (checkColumn.rows.length === 0) {
+      console.log(`Добавление колонки ${columnName} в таблицу ${tableName}...`);
       await query(`ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${columnType};`);
-      console.log(`Колонка ${columnName} добавлена в таблицу ${tableName}`);
+      console.log(`✓ Колонка ${columnName} успешно добавлена в таблицу ${tableName}`);
+    } else {
+      console.log(`✓ Колонка ${columnName} уже существует в таблице ${tableName}`);
     }
   } catch (error) {
-    console.warn(`Предупреждение: не удалось добавить колонку ${columnName}:`, error.message);
+    console.error(`Ошибка при добавлении колонки ${columnName}:`, error.message);
   }
 }
 
