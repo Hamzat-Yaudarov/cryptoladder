@@ -1,5 +1,4 @@
 import React from 'react';
-import React from 'react';
 import { useUser } from '../../context/UserContext';
 import '../styles/Profile.css';
 
