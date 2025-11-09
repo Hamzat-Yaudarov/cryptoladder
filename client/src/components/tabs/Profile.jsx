@@ -1,4 +1,5 @@
 import React from 'react';
+import React from 'react';
 import { useUser } from '../../context/UserContext';
 import '../styles/Profile.css';
 
@@ -121,7 +122,7 @@ export function Profile() {
               <div className="system-details">
                 <div>0-14 рефералов → до 2 уровней</div>
                 <div>15-34 реферала → до 3 уровней</div>
-                <div>35-69 рефералов → до 4 уровней</div>
+                <div>35-69 р��фералов → до 4 уровней</div>
                 <div>70+ рефералов → до 5 уровней</div>
               </div>
             </div>
