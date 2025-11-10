@@ -20,7 +20,7 @@ export default function App() {
           const tg = window.Telegram.WebApp;
           tg.ready();
 
-          const userId = tg.initData?.user?.id || new URLSearchParams(window.location.search).get('user_id');
+          const userId = tg.initDataUnsafe?.user?.id || new URLSearchParams(window.location.search).get('user_id');
 
           if (userId) {
             const response = await fetch(`/api/user/profile?user_id=${userId}`);
