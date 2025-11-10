@@ -91,7 +91,10 @@ export async function initDatabase() {
         ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
       `);
     } catch (err) {
-      if (err.code !== '42701') { // 42701 = column already exists
+      // Код 42701 = column already exists (в Postgres это нормальная ошибка)
+      if (err.code === '42701') {
+        console.log('✓ Колонка updated_at уже существует');
+      } else {
         console.warn('⚠️ Could not add updated_at to weekly_ratings:', err.message);
       }
     }
