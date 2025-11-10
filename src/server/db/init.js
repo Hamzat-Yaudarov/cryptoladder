@@ -79,9 +79,22 @@ export async function initDatabase() {
         rank INTEGER,
         reward_claimed BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         UNIQUE(week_start, user_id)
       );
     `);
+
+    // Добавить updated_at колонку если её нет (для существующих БД)
+    try {
+      await query(`
+        ALTER TABLE weekly_ratings
+        ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+      `);
+    } catch (err) {
+      if (err.code !== '42701') { // 42701 = column already exists
+        console.warn('⚠️ Could not add updated_at to weekly_ratings:', err.message);
+      }
+    }
 
     // Indexes for performance
     await query(`CREATE INDEX IF NOT EXISTS idx_users_telegram_id ON users(telegram_id);`);
