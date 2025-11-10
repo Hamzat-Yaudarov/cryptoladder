@@ -20,14 +20,19 @@ export function IncomeTab() {
     try {
       if (!user) return;
       const response = await fetch(`/api/transactions?user_id=${user.telegram_id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setTransactions(data);
-        calculateStats(data);
+
+      if (!response.ok) {
+        console.error(`API error: ${response.status} ${response.statusText}`);
+        setLoading(false);
+        return;
       }
+
+      const data = await response.json();
+      setTransactions(data);
+      calculateStats(data);
+      setLoading(false);
     } catch (error) {
       console.error('Error loading transactions:', error);
-    } finally {
       setLoading(false);
     }
   };

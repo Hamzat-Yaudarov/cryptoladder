@@ -8,6 +8,14 @@ import { query } from '../db/client.js';
 
 const router = express.Router();
 
+// Disable caching for API endpoints
+router.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+  next();
+});
+
 // Authentication middleware
 router.use((req, res, next) => {
   const userId = req.query.user_id || req.body.user_id;

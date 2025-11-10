@@ -16,13 +16,18 @@ export function CitizensTab() {
     try {
       if (!user) return;
       const response = await fetch(`/api/referrals?user_id=${user.telegram_id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setReferrals(data.referrals || []);
+
+      if (!response.ok) {
+        console.error(`API error: ${response.status} ${response.statusText}`);
+        setLoading(false);
+        return;
       }
+
+      const data = await response.json();
+      setReferrals(data.referrals || []);
+      setLoading(false);
     } catch (error) {
       console.error('Error loading referrals:', error);
-    } finally {
       setLoading(false);
     }
   };
@@ -30,6 +35,12 @@ export function CitizensTab() {
   const copyLink = async () => {
     try {
       const response = await fetch(`/api/referrals?user_id=${user.telegram_id}`);
+
+      if (!response.ok) {
+        console.error(`API error: ${response.status} ${response.statusText}`);
+        return;
+      }
+
       const data = await response.json();
       await navigator.clipboard.writeText(data.link);
       setCopied(true);
@@ -50,7 +61,7 @@ export function CitizensTab() {
       </div>
 
       <div className="referral-link-card">
-        <h3>🔗 Пригла��ай друзей</h3>
+        <h3>🔗 Приглашай друзей</h3>
         <p className="referral-hint">
           Каждый приглашённый получит бонус 0.5⭐️ при первой активации завода
         </p>

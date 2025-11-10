@@ -16,14 +16,19 @@ export function ConstructionTab() {
     try {
       if (!user) return;
       const response = await fetch(`/api/city/stats?user_id=${user.telegram_id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setCity(data.city);
-        setReferralCount(data.referralCount || 0);
+
+      if (!response.ok) {
+        console.error(`API error: ${response.status} ${response.statusText}`);
+        setLoading(false);
+        return;
       }
+
+      const data = await response.json();
+      setCity(data.city);
+      setReferralCount(data.referralCount || 0);
+      setLoading(false);
     } catch (error) {
       console.error('Error loading construction data:', error);
-    } finally {
       setLoading(false);
     }
   };

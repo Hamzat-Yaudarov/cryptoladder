@@ -21,11 +21,15 @@ export function CityTab() {
     try {
       if (!user) return;
       const response = await fetch(`/api/city/stats?user_id=${user.telegram_id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setCity(data.city);
-        setFactory(data.activeFactory);
+
+      if (!response.ok) {
+        console.error(`API error: ${response.status} ${response.statusText}`);
+        return;
       }
+
+      const data = await response.json();
+      setCity(data.city);
+      setFactory(data.activeFactory);
     } catch (error) {
       console.error('Error loading city:', error);
     } finally {

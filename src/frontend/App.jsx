@@ -45,13 +45,15 @@ export default function App() {
         const response = await fetch(`/api/user/profile?user_id=${userId}`);
 
         if (!response.ok) {
+          console.error(`Profile API error: ${response.status} ${response.statusText}`);
           const errorData = await response.json().catch(() => ({}));
-          setError(errorData.error || 'Ошибка при загрузке профиля');
+          setError(errorData.error || `Ошибка при загрузке профиля (${response.status})`);
           setLoading(false);
           return;
         }
 
         const userData = await response.json();
+        console.log('✅ User profile loaded successfully:', userData);
         setUser(userData);
         setLoading(false);
       } catch (err) {

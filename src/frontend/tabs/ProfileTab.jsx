@@ -16,14 +16,19 @@ export function ProfileTab() {
     try {
       if (!user) return;
       const response = await fetch(`/api/rating/weekly?user_id=${user.telegram_id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setWeeklyRating(data.rating || []);
-        setUserRank(data.userRank);
+
+      if (!response.ok) {
+        console.error(`API error: ${response.status} ${response.statusText}`);
+        setLoading(false);
+        return;
       }
+
+      const data = await response.json();
+      setWeeklyRating(data.rating || []);
+      setUserRank(data.userRank);
+      setLoading(false);
     } catch (error) {
       console.error('Error loading rating:', error);
-    } finally {
       setLoading(false);
     }
   };
@@ -97,7 +102,7 @@ export function ProfileTab() {
         <div className="rating-list">
           <h3>📊 Топ игроки</h3>
           {weeklyRating.length === 0 ? (
-            <p className="empty-message">Р��йтинг пока пуст</p>
+            <p className="empty-message">Рейтинг пока пуст</p>
           ) : (
             <div className="top-players">
               {weeklyRating.slice(0, 10).map((player, index) => (
