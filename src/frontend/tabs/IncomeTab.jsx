@@ -88,7 +88,7 @@ export function IncomeTab() {
     return labels[type] || type;
   };
 
-  if (loading) {
+  if (loading || !user) {
     return <div className="tab-container"><div className="spinner"></div></div>;
   }
 

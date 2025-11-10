@@ -69,7 +69,7 @@ export function ConstructionTab() {
     };
   };
 
-  if (loading) {
+  if (loading || !user) {
     return <div className="tab-container"><div className="spinner"></div></div>;
   }
 

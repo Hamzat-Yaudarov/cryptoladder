@@ -39,7 +39,7 @@ export function CitizensTab() {
     }
   };
 
-  if (loading) {
+  if (loading || !user) {
     return <div className="tab-container"><div className="spinner"></div></div>;
   }
 
@@ -50,7 +50,7 @@ export function CitizensTab() {
       </div>
 
       <div className="referral-link-card">
-        <h3>🔗 Приглашай друзей</h3>
+        <h3>🔗 Пригла��ай друзей</h3>
         <p className="referral-hint">
           Каждый приглашённый получит бонус 0.5⭐️ при первой активации завода
         </p>

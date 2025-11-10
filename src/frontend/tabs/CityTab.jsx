@@ -11,10 +11,11 @@ export function CityTab() {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
+    setLoading(true);
     loadCityData();
     const interval = setInterval(loadCityData, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [user]);
 
   const loadCityData = async () => {
     try {
@@ -56,7 +57,7 @@ export function CityTab() {
     }
   };
 
-  if (loading) {
+  if (loading || !user) {
     return <div className="tab-container"><div className="spinner"></div></div>;
   }
 

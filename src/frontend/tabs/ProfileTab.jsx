@@ -52,7 +52,7 @@ export function ProfileTab() {
     return rewards[rank] || 0;
   };
 
-  if (loading) {
+  if (loading || !user) {
     return <div className="tab-container"><div className="spinner"></div></div>;
   }
 
@@ -97,7 +97,7 @@ export function ProfileTab() {
         <div className="rating-list">
           <h3>📊 Топ игроки</h3>
           {weeklyRating.length === 0 ? (
-            <p className="empty-message">Рейтинг пока пуст</p>
+            <p className="empty-message">Р��йтинг пока пуст</p>
           ) : (
             <div className="top-players">
               {weeklyRating.slice(0, 10).map((player, index) => (

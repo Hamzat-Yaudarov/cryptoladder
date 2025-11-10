@@ -16,26 +16,47 @@ export default function App() {
   useEffect(() => {
     const initTelegram = async () => {
       try {
+        // Get user ID from Telegram or URL params
+        let userId = null;
+
         if (window.Telegram?.WebApp) {
           const tg = window.Telegram.WebApp;
           tg.ready();
 
-          const userId = tg.initDataUnsafe?.user?.id || new URLSearchParams(window.location.search).get('user_id');
-
-          if (userId) {
-            const response = await fetch(`/api/user/profile?user_id=${userId}`);
-            if (response.ok) {
-              const userData = await response.json();
-              setUser(userData);
-            } else {
-              setError('Failed to load user profile');
-            }
+          // Correct way to get user data from Telegram MiniApp
+          if (tg.initDataUnsafe?.user?.id) {
+            userId = tg.initDataUnsafe.user.id;
           }
         }
+
+        // Fallback to URL parameter
+        if (!userId) {
+          userId = new URLSearchParams(window.location.search).get('user_id');
+        }
+
+        // If we still don't have a user ID, show error
+        if (!userId) {
+          setError('Не удалось определить пользователя. Пожалуйста, откройте приложение через Telegram.');
+          setLoading(false);
+          return;
+        }
+
+        // Fetch user profile
+        const response = await fetch(`/api/user/profile?user_id=${userId}`);
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          setError(errorData.error || 'Ошибка при загрузке профиля');
+          setLoading(false);
+          return;
+        }
+
+        const userData = await response.json();
+        setUser(userData);
+        setLoading(false);
       } catch (err) {
         console.error('Error initializing app:', err);
-        setError(err.message);
-      } finally {
+        setError(`Ошибка инициализации: ${err.message}`);
         setLoading(false);
       }
     };
