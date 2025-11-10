@@ -1,0 +1,113 @@
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--dark-bg);
+  color: var(--text-primary);
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: 70px;
+  scroll-behavior: smooth;
+}
+
+.content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.content::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.content::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 70px;
+  background: var(--card-bg);
+  border-top: 1px solid var(--border-color);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  gap: 8px;
+  padding: 8px;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 6px 4px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  transition: all 0.3s ease;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.nav-item:hover {
+  color: var(--primary-color);
+  background: rgba(0, 136, 204, 0.1);
+}
+
+.nav-item.active {
+  color: var(--primary-color);
+  background: rgba(0, 136, 204, 0.2);
+}
+
+.nav-icon {
+  font-size: 24px;
+  margin-bottom: 2px;
+  display: block;
+}
+
+.nav-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .nav-label {
+    display: none;
+  }
+
+  .nav-item {
+    padding: 6px;
+  }
+
+  .nav-icon {
+    font-size: 20px;
+    margin-bottom: 0;
+  }
+
+  .bottom-nav {
+    height: 60px;
+    gap: 4px;
+  }
+
+  .content {
+    padding-bottom: 60px;
+  }
+}

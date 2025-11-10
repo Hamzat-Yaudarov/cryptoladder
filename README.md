@@ -1,241 +1,292 @@
-# Crypto Ladder 🪜
+# CityLadder 🏙️
 
-A revolutionary Telegram MiniApp featuring a smart pyramid system with daily activation rewards.
+**Экономическая игра "Город прибыли"** — Telegram MiniApp где игроки строят города, приглашают жителей и получают звёзды ⭐️ (Telegram Stars).
 
-## Project Overview
+## 🎮 Игровые механики
 
-Crypto Ladder is a social economic MiniApp system where players can:
-- 💰 Earn ⭐️ (stars) from players below them in the pyramid structure
-- 👥 Invite friends and get referral bonuses
-- 📈 Build their own downline and unlock deeper income levels
+### Основная идея
+Каждый игрок создаёт свой город, состоящий из домов и завода. Город растёт вверх за счёт приглашённых рефералов, что увеличивает глубину дохода.
 
-### Key Features
+### Экономика
 
-✅ **Pyramid Structure**
-- Ternary tree structure (each player can have up to 3 direct subordinates)
-- Automatic distribution of players in pyramid
-- Income only from your direct branch
+#### 💰 Стоимости
+- **Создание города**: 3⭐️ (одноразово, даёт 2 дома + 1 завод)
+- **Активация завода**: 10⭐️ за 24 часа
 
-✅ **Daily Activation System**
-- Players pay 10⭐️ daily to receive earnings
-- Distribution: Levels 1-5 get 35%, 21%, 14%, 8%, 4% respectively
-- Remaining goes to the system owner
+#### 📊 Распределение прибыли по уровням
 
-✅ **Referral System**
-- Each player gets a unique referral link
-- 0.5⭐��� bonus for each referred player's first activation
-- Bonus repeats with each subsequent activation
-- Referral depth depends on number of invited players
+| Уровень | Игроков | Процент | Пример (за 10⭐️) |
+|---------|---------|---------|-----------------|
+| 1       | до 3    | 40%     | 4⭐️ на человека |
+| 2       | до 9    | 25%     | 2.5⭐️ на человека |
+| 3       | до 27   | 17%     | 1.7⭐️ на человека |
+| 4       | до 81   | 10%     | 1⭐️ на человека |
+| 5       | до 243  | 5%      | 0.5⭐️ на человека |
 
-✅ **MiniApp Interface**
-- 🏠 **Home**: Balance, activation status, pyramid position
-- 👥 **Partners**: Referral management and level information
-- 💸 **Income**: Earnings statistics and breakdown by levels
-- ⚙️ **Profile**: Settings, rules, and help
+**Важно**: Прибыль выплачивается **каждый час** автоматически.
 
-## Tech Stack
+### 🏗️ Развитие города
 
-- **Backend**: Node.js + Express
-- **Database**: PostgreSQL (Neon)
-- **Bot Framework**: Telegraf
-- **Frontend**: React + Vite
-- **Deployment**: Railway
+Город развивается автоматически при достижении порогов рефералов:
 
-## Setup Instructions
+| Уровень | Дома | Уровни дохода | Рефералов |
+|---------|------|---------------|-----------|
+| 1       | 2    | 1             | 0         |
+| 2       | 2    | 2             | 0-14      |
+| 3       | 3    | 3             | 15-34     |
+| 4       | 4    | 4             | 35-69     |
+| 5       | 5    | 5             | 70+       |
 
-### Prerequisites
-- Node.js 16+
-- PostgreSQL database (Neon)
-- Telegram Bot Token
+### 👥 Реферальная система
 
-### 1. Clone and Install
+- **Приглашение**: Игрок получает реферальную ссылку для приглашения друзей
+- **Бонус**: +0.5⭐️ за первую активацию завода реферала
+- **Структура**: Рефералы заселяются в города по уровням близости
 
+### 🏆 Еженедельный рейтинг
+
+Каждую неделю начисляются награды за количество приглашённых:
+
+| Место | Награда |
+|-------|---------|
+| 🥇 1  | 100⭐️   |
+| 🥈 2  | 75⭐️    |
+| 🥉 3  | 50⭐️    |
+| 4     | 25⭐️    |
+| 5     | 15⭐️    |
+
+## 📱 Интерфейс MiniApp
+
+### 5 основных вкладок
+
+1. **🏙️ Город** — Баланс, статус завода, кнопка активации
+2. **👥 Жители** — Список рефералов, реферальная ссылка, структура города
+3. **💸 Доход** — График прибыли, история транзакций, статистика
+4. **🏗️ Строительство** — Информация об апгрейдах города, прогресс развития
+5. **⚙️ Профиль** — Инфо игрока, еженедельный рейтинг, справка, поддержка
+
+## 🏗️ Архитектура проекта
+
+```
+cityladder/
+├── server.js                          # Главный entry point
+├── package.json                       # Зависимости
+├── index.html                         # HTML entry for frontend
+│
+├── src/
+│   ├── server/                        # Backend
+│   │   ├── db/
+│   │   │   ├── client.js             # PostgreSQL client
+│   │   │   └── init.js               # Schema initialization
+│   │   ├── bot/
+│   │   │   ├── webhook.js            # Bot webhook handler
+│   │   │   └── handlers.js           # Bot command handlers
+│   │   ├── services/
+│   │   │   ├── userService.js        # User management
+│   │   │   ├── cityService.js        # City & house management
+│   │   │   ├── factoryService.js     # Factory & profit logic
+│   │   │   ├── referralService.js    # Referral system
+│   │   │   ├── ratingService.js      # Weekly ratings
+│   │   │   └── schedulerService.js   # Background tasks
+│   │   └── routes/
+│   │       ├── bot.js                # Bot webhook routes
+│   │       └── api.js                # REST API routes
+│   │
+│   └── frontend/                      # Frontend MiniApp
+│       ├── main.jsx                  # React entry point
+│       ├── App.jsx                   # Main app with nav
+│       ├── context/
+│       │   └── AppContext.js         # Global state
+│       ├── tabs/
+│       │   ├── CityTab.jsx           # City tab
+│       │   ├── CitizensTab.jsx       # Citizens/referrals tab
+│       │   ├── IncomeTab.jsx         # Income history tab
+│       │   ├── ConstructionTab.jsx   # City upgrades tab
+│       │   └── ProfileTab.jsx        # Profile & ratings tab
+│       └── styles/
+│           ├── global.css            # Global styles
+│           ├── App.css               # App layout
+│           └── tabs.css              # Tab styles
+│
+├── Dockerfile                         # Docker config
+├── railway.toml                       # Railway config
+├── DEPLOYMENT.md                      # Deployment guide
+└── README.md                          # This file
+```
+
+## 🗄️ Database Schema
+
+### Users
+- `id` — Primary key
+- `telegram_id` — Telegram ID (unique)
+- `username` — Telegram username
+- `first_name` — First name
+- `referrer_id` — Referrer's user ID
+- `created_at` — Account creation date
+
+### Cities
+- `id` — Primary key
+- `user_id` — Owner user ID (foreign key)
+- `level` — City level (1-5)
+- `houses` — Number of houses
+- `balance` — Star balance
+- `created_at`, `updated_at`
+
+### Factories
+- `id` — Primary key
+- `city_id` — Owner city ID (foreign key)
+- `is_active` — Activation status
+- `activated_at` — Activation timestamp
+- `deactivates_at` — Deactivation timestamp
+- `created_at`, `updated_at`
+
+### Referrals
+- `id` — Primary key
+- `referrer_id` — Referrer user ID (foreign key)
+- `referred_id` — Referred user ID (foreign key)
+- `level` — Network level depth
+- `activated_factory_bonus_claimed` — Bonus claim status
+- `created_at`
+
+### Transactions
+- `id` — Primary key
+- `user_id` — Owner user ID (foreign key)
+- `type` — Transaction type
+- `amount` — Star amount
+- `description` — Details
+- `source_user_id` — Source user (for profits)
+- `level_income_from` — Income level
+- `created_at`
+
+### Weekly Ratings
+- `id` — Primary key
+- `week_start` — Week start date
+- `user_id` — User ID (foreign key)
+- `referral_count` — Referral count for week
+- `rank` — Weekly rank
+- `reward_claimed` — Reward claim status
+- `created_at`
+
+## 🔄 Scheduler Tasks
+
+### Profit Processing (Every 1 minute)
+1. Find all active factories
+2. For each factory owner, traverse referral chain
+3. Calculate profit at each level based on percentage
+4. Add hourly portion to each referrer's balance
+5. Deactivate expired factories
+
+### Rating Updates (Every 1 hour)
+1. Count referrals for each user
+2. Sort by referral count
+3. Update weekly_ratings table
+4. Assign ranks 1-∞
+
+### Weekly Rewards (Daily at midnight UTC)
+1. Get current week's ratings
+2. For top 5, add reward to balance
+3. Mark reward as claimed
+4. Record transaction
+
+## 🚀 Development
+
+### Local Setup
 ```bash
 npm install
-```
-
-### 2. Environment Setup
-
-Create a `.env` file in the root directory:
-
-```env
-DATABASE_URL=postgresql://user:password@host/database
-TELEGRAM_BOT_TOKEN=your_bot_token
-PORT=8080
-NODE_ENV=production
-WEB_APP_URL=https://your-domain.com/
-```
-
-### 3. Initialize Database
-
-The database schema is automatically created on first run. The server will initialize tables for:
-- Users (with pyramid structure)
-- Activations
-- Referrals
-- Earnings
-- Purchases
-
-### 4. Local Development
-
-Start both server and frontend:
-
-```bash
 npm run dev
 ```
 
-The dev server will:
-- Run Express backend on port 8080
-- Start Vite dev server with hot reload
-- Proxy API calls to the backend
+Server: http://localhost:8080
+Frontend: http://localhost:3001 (via Vite proxy)
 
-### 5. Build for Production
-
+### Build for Production
 ```bash
 npm run build
 ```
 
-This creates optimized builds for both server and frontend.
+Output: `dist/` folder with built frontend
 
-## Project Structure
-
-```
-├── server/
-│   ├── index.js              # Main server file
-│   ├── bot.js                # Telegram bot setup
-│   ├── db.js                 # Database connection & schema
-│   ├── services/
-│   │   ├── userService.js    # User & pyramid logic
-│   │   └── activationService.js  # Activation & earnings
-│   └── routes/
-│       ├── auth.js           # Authentication endpoints
-│       ├── activation.js     # Activation & purchase endpoints
-│       └── pyramid.js        # Pyramid & referral endpoints
-├── client/
-│   ├── src/
-│   │   ├── main.jsx          # React entry point
-│   │   ├── App.jsx           # Main app component
-│   │   ├── context/
-│   │   │   └── UserContext.jsx   # User state management
-│   │   └── components/
-│   │       ├── tabs/         # Tab components
-│   │       │   ├── Home.jsx
-│   │       │   ├── Partners.jsx
-│   │       │   ├── Income.jsx
-│   │       │   └── Profile.jsx
-│   │       └── styles/       # Component styles
-│   └── index.html
-├── vite.config.js
-├── package.json
-└── .env.example
-```
-
-## API Endpoints
+## 📡 API Endpoints
 
 ### Authentication
-- `POST /api/auth/init` - Initialize new user
-- `GET /api/auth/user/:telegramId` - Get user data
+All endpoints require `user_id` parameter (Telegram ID).
 
-### Activation
-- `POST /api/activation/activate/:userId` - Daily activation
-- `POST /api/activation/buy-place/:userId` - Buy pyramid place
-- `GET /api/activation/earnings/:userId` - Get earnings stats
+### User
+- `GET /api/user/profile` — Get user profile
 
-### Pyramid
-- `GET /api/pyramid/structure/:userId` - Get pyramid structure
-- `GET /api/pyramid/downline/:userId` - Get downline users
-- `GET /api/pyramid/referrals/:userId` - Get referral list
+### City
+- `GET /api/city/stats` — Get city stats & factories
+- `POST /api/city/build-house` — Build house (upgrade city)
 
-## Deployment to Railway
+### Factory
+- `POST /api/factory/activate` — Activate factory for 24h
 
-### 1. Push to Git
-```bash
-git add .
-git commit -m "Initial commit"
-git push origin main
-```
+### Referrals
+- `GET /api/referrals` — Get referral list & link
 
-### 2. Railway Configuration
+### Income
+- `GET /api/transactions` — Get transaction history
 
-Create a `railway.json` in root:
-```json
-{
-  "build": {
-    "builder": "nixpacks"
-  },
-  "deploy": {
-    "numReplicas": 1,
-    "sleepApplication": false
-  }
-}
-```
+### Rating
+- `GET /api/rating/weekly` — Get weekly ratings
 
-### 3. Set Environment Variables on Railway
-- `DATABASE_URL` - Your Neon database connection string
-- `TELEGRAM_BOT_TOKEN` - Your bot token
-- `PORT` - Set to 8080
-- `WEB_APP_URL` - Your Railway app domain
+## 🤖 Telegram Bot
 
-### 4. Deploy
-Push to the Railway-connected repository, and it will automatically deploy.
+### Commands
+- `/start` — Welcome message with MiniApp button
+- `callback_query` — Button handlers (rules, support)
 
-## Neon Database Connection
+### Webhook
+- URL: `https://cryptoladder-production.up.railway.app/bot/webhook`
+- Method: POST
+- Telegram sends updates to this endpoint
 
-The project uses Neon PostgreSQL. Your connection string format:
-```
-postgresql://user:password@ep-xxx.c-2.eu-central-1.aws.neon.tech/database?sslmode=require&channel_binding=require
-```
+## 🔐 Security
 
-Set this as your `DATABASE_URL` environment variable.
+- **Bot**: Token in environment variable
+- **Database**: SSL/TLS connection required
+- **API**: User authentication via Telegram ID
+- **Secrets**: Never committed to repository
 
-## Telegram Bot Commands
+## 📈 Game Balance
 
-The bot responds to:
-- `/start` - Shows greeting and opens MiniApp button
-- `/help` - Shows game rules and earning system
+### Economy
+- Factory cost (10⭐️) should equal ~10 hours of profit from 1st level
+- Profit percentages decrease with depth to prevent infinite loops
+- Weekly rewards encourage activity without breaking economy
 
-## Economics Summary
+### Growth
+- 1st level: 3 players — easy to fill
+- 2nd level: 9 players — encourages sharing
+- 3rd level: 27 players — real network effect
+- 4th-5th: Exponential growth — aspirational targets
 
-### Purchase
-- **Cost**: 3⭐️ per place
-- **Goes to**: System owner (100%)
+### Anti-Fraud
+- Telegram ID validation prevents bot accounts
+- Factory requires balance deduction (no free farming)
+- Referral structure prevents self-referencing
 
-### Daily Activation
-- **Cost**: 10⭐️
-- **Distribution of 5⭐️ among referrer tree**:
-  - Level 1: 35% (1.75⭐️)
-  - Level 2: 21% (1.05⭐️)
-  - Level 3: 14% (0.7⭐️)
-  - Level 4: 8% (0.4⭐️)
-  - Level 5: 4% (0.2⭐️)
-  - Remaining: Goes to system owner
+## 🐛 Troubleshooting
 
-### Referral Bonuses
-- **Amount**: 0.5⭐️ per referred player activation
-- **Frequency**: Each time referred player activates
-- **Unlocks levels**: Based on referral count
-  - 0-14: 2 levels
-  - 15-34: 3 levels
-  - 35-69: 4 levels
-  - 70+: 5 levels
+### Factory not activating
+- Check if user has balance >= 10⭐️
+- Verify city exists in database
+- Check for database connection errors
 
-## Important Notes
+### Profit not showing
+- Verify factory is_active = true
+- Check deactivates_at > now()
+- Ensure referrer has referral records
+- Check profit processing in scheduler logs
 
-⚠️ **Anti-Fraud Measures**
-- Can only activate if placed in pyramid
-- Can't activate twice in 24 hours
-- Inactive players (>3 days) have frozen branches
-- Only active players receive earnings
+### Bot not responding
+- Verify BOT_TOKEN is correct
+- Check webhook URL in Telegram
+- Review server logs for errors
 
-🔒 **Security**
-- Telegram WebApp validation
-- Database connection over SSL/TLS
-- Environment variables for sensitive data
-- Input validation on all endpoints
+## 📞 Support
+- Telegram: @cryptoladder_support
+- Email: support@cityladder.app (if available)
 
-## Support & License
-
-For issues or questions, please contact the project maintainers.
-
----
-
-**Crypto Ladder © 2024** - A decentralized earning platform
+## 📜 License
+Private project — All rights reserved © 2024

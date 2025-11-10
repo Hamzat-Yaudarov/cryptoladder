@@ -1,0 +1,907 @@
+.tab-container {
+  padding: 16px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.tab-header {
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.tab-header h1 {
+  font-size: 28px;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+/* CITY TAB */
+.city-tab .city-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.city-tab .city-header h1 {
+  font-size: 28px;
+  margin: 0;
+}
+
+.city-tab .city-level {
+  background: linear-gradient(135deg, var(--primary-color), #0066aa);
+  padding: 6px 12px;
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.balance-card {
+  background: linear-gradient(135deg, var(--primary-color), #0066aa);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  text-align: center;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 16px rgba(0, 136, 204, 0.2);
+}
+
+.balance-title {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.balance-amount {
+  font-size: 36px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.balance-amount .star {
+  font-size: 32px;
+}
+
+.city-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.stat-item {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 16px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stat-icon {
+  font-size: 32px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.factory-section {
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid var(--border-color);
+}
+
+.factory-section h2 {
+  font-size: 18px;
+  margin-bottom: 16px;
+}
+
+.factory-active,
+.factory-inactive {
+  margin-bottom: 16px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.status-badge.active {
+  background: var(--success-color);
+  color: #000;
+}
+
+.status-badge.inactive {
+  background: var(--danger-color);
+  color: white;
+}
+
+.factory-active p,
+.factory-inactive p {
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.cost-info {
+  background: rgba(255, 107, 107, 0.1);
+  padding: 12px;
+  border-radius: var(--radius);
+  margin: 12px 0;
+}
+
+.profit-info {
+  background: rgba(81, 207, 102, 0.1);
+  padding: 12px;
+  border-radius: var(--radius);
+  margin: 12px 0;
+}
+
+.city-info,
+.payout-section,
+.network-structure {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border-color);
+}
+
+.city-info h3,
+.payout-section h3,
+.network-structure h3 {
+  margin-bottom: 12px;
+  font-size: 16px;
+}
+
+.city-info ul,
+.structure-list {
+  list-style: none;
+}
+
+.city-info li,
+.structure-list li {
+  padding: 8px 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.payout-note {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 8px;
+}
+
+/* CITIZENS TAB */
+.referral-link-card {
+  background: linear-gradient(135deg, rgba(81, 207, 102, 0.2), rgba(81, 207, 102, 0.1));
+  border: 1px solid var(--success-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.referral-link-card h3 {
+  margin-bottom: 8px;
+}
+
+.referral-hint {
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.referrals-counter {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.referrals-counter h3 {
+  margin: 0;
+}
+
+.referrals-counter .count {
+  color: var(--primary-color);
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.referrals-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.referral-item {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 16px;
+  transition: all 0.3s ease;
+}
+
+.referral-item:hover {
+  border-color: var(--primary-color);
+  background: rgba(0, 136, 204, 0.05);
+}
+
+.referral-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.referral-rank {
+  background: var(--primary-color);
+  color: white;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-weight: 600;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.referral-name {
+  font-weight: 600;
+  flex: 1;
+}
+
+.referral-details {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 12px;
+  gap: 8px;
+}
+
+.referral-level {
+  color: var(--text-secondary);
+}
+
+.factory-status {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.factory-status.active {
+  background: rgba(81, 207, 102, 0.2);
+  color: var(--success-color);
+}
+
+.factory-status.inactive {
+  background: rgba(255, 107, 107, 0.2);
+  color: var(--danger-color);
+}
+
+.referral-balance {
+  color: var(--primary-color);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-secondary);
+}
+
+.empty-state p {
+  margin-bottom: 8px;
+}
+
+.structure-info ul {
+  list-style: none;
+}
+
+.structure-info li {
+  padding: 10px 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+/* INCOME TAB */
+.income-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 16px;
+  text-align: center;
+}
+
+.stat-card .stat-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.stat-card .stat-amount {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--success-color);
+}
+
+.transactions-section h2 {
+  margin-bottom: 16px;
+}
+
+.transactions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.transaction-item {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.transaction-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.transaction-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.transaction-info {
+  flex: 1;
+}
+
+.transaction-type {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.transaction-time {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.transaction-amount {
+  font-weight: 700;
+  font-size: 14px;
+  text-align: right;
+  min-width: 80px;
+}
+
+.transaction-amount.positive {
+  color: var(--success-color);
+}
+
+.transaction-amount.negative {
+  color: var(--danger-color);
+}
+
+.income-info {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 16px;
+  border: 1px solid var(--border-color);
+}
+
+.income-info h3 {
+  margin-bottom: 12px;
+}
+
+.income-info ul {
+  list-style: none;
+}
+
+.income-info li {
+  padding: 8px 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.income-info strong {
+  color: var(--text-primary);
+}
+
+/* CONSTRUCTION TAB */
+.current-city {
+  margin-bottom: 24px;
+}
+
+.current-city h2 {
+  margin-bottom: 16px;
+  font-size: 18px;
+}
+
+.city-build-card {
+  background: linear-gradient(135deg, var(--card-bg), rgba(0, 136, 204, 0.1));
+  border: 1px solid var(--primary-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.city-level-display {
+  flex: 1;
+  text-align: center;
+}
+
+.level-number {
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.houses-display {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  font-size: 32px;
+}
+
+.house-icon {
+  display: inline-block;
+}
+
+.house-icon-small {
+  display: inline-block;
+  font-size: 20px;
+  margin: 0 2px;
+}
+
+.city-stats-detail {
+  flex: 1;
+}
+
+.city-stats-detail p {
+  margin: 6px 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.city-stats-detail strong {
+  color: var(--text-primary);
+}
+
+.upgrade-progression {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 24px;
+  border: 1px solid var(--border-color);
+}
+
+.upgrade-progression h2 {
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.progression-bar {
+  height: 8px;
+  background: var(--border-color);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary-color), #0066aa);
+  transition: width 0.3s ease;
+}
+
+.progression-text {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.upgrade-options {
+  margin-bottom: 24px;
+}
+
+.upgrade-options h2 {
+  font-size: 18px;
+  margin-bottom: 16px;
+}
+
+.upgrade-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.upgrade-card h3 {
+  margin-bottom: 8px;
+  font-size: 16px;
+}
+
+.upgrade-description {
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.upgrade-requirements,
+.upgrade-cost,
+.upgrade-rewards {
+  background: rgba(0, 136, 204, 0.1);
+  border-left: 3px solid var(--primary-color);
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.upgrade-requirements p,
+.upgrade-cost p,
+.upgrade-rewards p {
+  margin: 4px 0;
+  color: var(--text-secondary);
+}
+
+.upgrade-requirements strong,
+.upgrade-cost strong,
+.upgrade-rewards strong {
+  color: var(--text-primary);
+}
+
+.next-upgrade {
+  background: var(--card-bg);
+  border: 2px solid var(--primary-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.next-upgrade h3 {
+  margin-bottom: 16px;
+}
+
+.next-upgrade-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.next-level {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.next-houses {
+  font-size: 32px;
+}
+
+.upgrade-progress,
+.upgrade-benefit {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.upgrade-progress strong,
+.upgrade-benefit strong {
+  color: var(--primary-color);
+  font-size: 16px;
+}
+
+.upgrade-guide {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 16px;
+  border: 1px solid var(--border-color);
+}
+
+.upgrade-guide h3 {
+  margin-bottom: 12px;
+}
+
+.upgrade-guide ol {
+  list-style: decimal inside;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.upgrade-guide li {
+  margin: 8px 0;
+  padding-left: 8px;
+}
+
+/* PROFILE TAB */
+.profile-card {
+  background: linear-gradient(135deg, var(--card-bg), rgba(0, 136, 204, 0.1));
+  border: 1px solid var(--primary-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.profile-avatar {
+  font-size: 56px;
+  margin-bottom: 16px;
+}
+
+.profile-info h2 {
+  margin-bottom: 4px;
+}
+
+.profile-id,
+.profile-joined {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.rank-section {
+  margin-bottom: 24px;
+}
+
+.rank-section h2 {
+  font-size: 18px;
+  margin-bottom: 16px;
+}
+
+.user-rank-card {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 179, 0, 0.1));
+  border: 1px solid rgba(255, 215, 0, 0.5);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.rank-title {
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.rank-display {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.rank-badge {
+  font-size: 40px;
+}
+
+.rank-number {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--warning-color);
+}
+
+.rank-referrals {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.rank-reward {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--success-color);
+}
+
+.rating-list h3 {
+  margin-bottom: 16px;
+  font-size: 16px;
+}
+
+.top-players {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rating-item {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.3s ease;
+}
+
+.rating-item:hover {
+  border-color: var(--primary-color);
+  background: rgba(0, 136, 204, 0.05);
+}
+
+.rating-item.top-rank {
+  border-color: var(--warning-color);
+  background: rgba(255, 215, 0, 0.05);
+}
+
+.rating-position {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 50px;
+}
+
+.badge {
+  font-size: 24px;
+}
+
+.position {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.rating-player-info {
+  flex: 1;
+}
+
+.player-name {
+  font-weight: 600;
+  margin: 0;
+  font-size: 14px;
+}
+
+.player-stats {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 4px 0 0 0;
+}
+
+.rating-reward {
+  font-weight: 700;
+  color: var(--warning-color);
+  text-align: right;
+}
+
+.help-section {
+  margin-bottom: 24px;
+}
+
+.help-section h3 {
+  margin-bottom: 16px;
+  font-size: 18px;
+}
+
+.faq {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.faq-item {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 12px;
+}
+
+.faq-item h4 {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.faq-item p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.contact-section {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 16px;
+  text-align: center;
+  margin-bottom: 16px;
+  border: 1px solid var(--border-color);
+}
+
+.contact-section h3 {
+  margin-bottom: 8px;
+}
+
+.contact-section p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.contact-section .btn {
+  display: inline-block;
+}
+
+.footer-text {
+  text-align: center;
+  padding: 16px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.footer-text p {
+  margin: 4px 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .tab-container {
+    padding: 12px;
+  }
+
+  .income-stats {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .city-build-card {
+    flex-direction: column;
+  }
+
+  .rating-item {
+    flex-wrap: wrap;
+  }
+}
