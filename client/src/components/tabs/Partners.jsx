@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import React, { useState, useEffect } from 'react';
 import { useUser } from '../../context/UserContext';
 import '../styles/Partners.css';
 
@@ -39,7 +38,7 @@ export function Partners() {
   };
 
   const shareVia = () => {
-    const text = `🚀 Присоединяйся к Crypto Ladder!\n\nЗарабатывай звёзды⭐�� в революционной пирамиде!\n\n${referralLink}`;
+    const text = `🚀 Присоединяйся к Crypto Ladder!\n\nЗарабатывай звёзды ⭐️ в революционной пирамиде!\n\n${referralLink}`;
     const url = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
   };
@@ -57,7 +56,7 @@ export function Partners() {
   return (
     <div className="partners-container">
       <div className="referral-link-section">
-        <h2>👥 Ваша реферальная ссылка</h2>
+        <h2>👥 Ваша реферальная ссылк��</h2>
 
         <div className="link-card">
           <div className="link-input-group">
@@ -70,7 +69,7 @@ export function Partners() {
             <button
               className="btn btn-small btn-copy"
               onClick={copyToClipboard}
-              title="Копи��овать ссылку"
+              title="Копировать ссылку"
             >
               {copied ? '✅ Скопировано' : '📋 Копировать'}
             </button>
@@ -130,13 +129,10 @@ export function Partners() {
                     <div className="referral-username">@{referral.username}</div>
                   )}
                   <div className="referral-date">
-                    Присоединился:{' '}
-                    {new Date(referral.created_at).toLocaleDateString('ru-RU')}
+                    Присоединился: {new Date(referral.created_at).toLocaleDateString('ru-RU')}
                   </div>
                 </div>
-                <div className="referral-balance">
-                  {parseFloat(referral.balance || 0).toFixed(2)} ⭐️
-                </div>
+                <div className="referral-balance">{parseFloat(referral.balance || 0).toFixed(2)} ⭐️</div>
               </div>
             ))}
           </div>
