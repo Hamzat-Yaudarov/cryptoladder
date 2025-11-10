@@ -91,6 +91,17 @@ export async function initializeDatabase() {
       );
     `);
 
+    // Payments table for buying stars (external provider simulation)
+    await query(`
+      CREATE TABLE IF NOT EXISTS payments (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        stars_amount INTEGER NOT NULL,
+        provider VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
     // Добавление недостающих колонок в существующие таблицы
     await addColumnIfNotExists('users', 'photo_url', 'TEXT');
 
@@ -103,7 +114,7 @@ export async function initializeDatabase() {
 
     console.log('Схема базы данных инициализирована успешно');
   } catch (error) {
-    console.error('Ошибка инициализации базы данных:', error);
+    console.error('Ошибка инициализац��и базы данных:', error);
     throw error;
   }
 }

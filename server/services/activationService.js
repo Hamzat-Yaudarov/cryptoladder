@@ -14,7 +14,7 @@ const DISTRIBUTION_LEVELS = {
 
 export async function activateUser(userId) {
   try {
-    // Проверка баланса пользователя
+    // Проверка бал��нса пользователя
     const user = await query(
       'SELECT balance FROM users WHERE id = $1',
       [userId]
@@ -24,7 +24,7 @@ export async function activateUser(userId) {
       throw new Error('Пользователь не найден');
     }
 
-    const userBalance = parseFloat(user.rows[0].balance);
+    const userBalance = parseFloat(user.rows[0].balance || 0);
     if (userBalance < ACTIVATION_COST) {
       throw new Error('Недостаточно звёзд для активации');
     }
@@ -58,6 +58,23 @@ export async function activateUser(userId) {
     // Distribute earnings to upline
     await distributeEarnings(userId);
 
+    // Process referral bonus (additional, not deducted from activation pool)
+    try {
+      // Find referrer
+      const refRow = await query(
+        `SELECT referrer_id FROM referrals WHERE referred_id = $1 LIMIT 1`,
+        [userId]
+      );
+      if (refRow.rows.length > 0) {
+        const referrerId = refRow.rows[0].referrer_id;
+        if (referrerId) {
+          await claimReferralBonus(referrerId, userId);
+        }
+      }
+    } catch (err) {
+      console.warn('Ошибка при начислении реферального бонуса:', err.message);
+    }
+
     return { success: true, activationCost: ACTIVATION_COST };
   } catch (error) {
     console.error('Ошибка при активации пользователя:', error);
@@ -67,34 +84,34 @@ export async function activateUser(userId) {
 
 async function distributeEarnings(userId) {
   try {
-    // Get user's pyramid path
-    const userPath = await query(
-      `WITH RECURSIVE path AS (
-        SELECT id, parent_id, 1 as level
+    // Get user's upline (parents) with depth where depth=1 is immediate parent
+    const upline = await query(
+      `WITH RECURSIVE upline AS (
+        SELECT id, parent_id, 0 as depth
         FROM users
         WHERE id = $1
 
         UNION ALL
 
-        SELECT u.id, u.parent_id, p.level + 1
+        SELECT u.id, u.parent_id, up.depth + 1
         FROM users u
-        INNER JOIN path p ON u.id = p.parent_id
-        WHERE p.level < 5
+        INNER JOIN upline up ON u.id = up.parent_id
+        WHERE up.depth < 5
       )
-      SELECT * FROM path WHERE id != $1 ORDER BY level`,
+      SELECT id, parent_id, depth FROM upline WHERE depth > 0 ORDER BY depth`,
       [userId]
     );
 
-    const uplineUsers = userPath.rows;
+    const uplineUsers = upline.rows;
     let totalDistributed = 0;
-    const distributionAmount = 5; // 50% of 10 stars
+    const distributionAmount = ACTIVATION_COST; // distribute full activation cost
 
     // Distribute to each level
     for (let i = 0; i < uplineUsers.length && i < 5; i++) {
-      const level = i + 1;
+      const level = uplineUsers[i].depth; // 1 = immediate parent
       const uplineUserId = uplineUsers[i].id;
       const percentage = DISTRIBUTION_LEVELS[level] || 0;
-      const amount = (distributionAmount * percentage);
+      const amount = parseFloat((distributionAmount * percentage).toFixed(2));
 
       if (amount > 0) {
         // Check if upline user is active
@@ -122,8 +139,8 @@ async function distributeEarnings(userId) {
     }
 
     // Remaining goes to creator
-    const creatorAmount = distributionAmount - totalDistributed;
-    const creatorId = 1; // Assuming creator is user with id 1
+    const creatorAmount = parseFloat((distributionAmount - totalDistributed).toFixed(2));
+    const creatorId = 1; // creator is user with id 1
 
     if (creatorAmount > 0) {
       await query(
@@ -154,7 +171,7 @@ export async function claimReferralBonus(referrerId, referredId) {
     );
 
     if (referral.rows.length === 0) {
-      return { success: false, message: 'Бонус уже получен или реферрал не найден' };
+      return { success: false, message: 'Бонус уже получен или реферал не найден' };
     }
 
     // Add bonus to referrer balance
@@ -178,7 +195,7 @@ export async function claimReferralBonus(referrerId, referredId) {
 
     return { success: true, bonus: REFERRAL_BONUS };
   } catch (error) {
-    console.error('Ошибка при получении реферрального бонуса:', error);
+    console.error('Ошибка при получении реферального бонуса:', error);
     throw error;
   }
 }
@@ -195,7 +212,7 @@ export async function buyPlace(userId) {
       throw new Error('Пользователь не найден');
     }
 
-    const userBalance = parseFloat(user.rows[0].balance);
+    const userBalance = parseFloat(user.rows[0].balance || 0);
     if (userBalance < PURCHASE_COST) {
       throw new Error('Недостаточно звёзд для покупки');
     }

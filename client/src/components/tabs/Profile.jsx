@@ -1,9 +1,49 @@
 import React from 'react';
+import React, { useState } from 'react';
 import { useUser } from '../../context/UserContext';
 import '../styles/Profile.css';
 
 export function Profile() {
-  const { user } = useUser();
+  const { user, refreshUser } = useUser();
+  const [buying, setBuying] = useState(false);
+  const [message, setMessage] = useState('');
+
+  const handleBuyPlace = async () => {
+    if (!user?.id) return;
+    try {
+      setBuying(true);
+      const response = await fetch(`/api/activation/buy-place/${user.id}`, { method: 'POST' });
+      const data = await response.json();
+      if (!response.ok) {
+        setMessage(`❌ ${data.error}`);
+      } else {
+        setMessage('✅ Место куплено!');
+        await refreshUser();
+      }
+    } catch (err) {
+      setMessage(`❌ ${err.message}`);
+    } finally {
+      setBuying(false);
+    }
+  };
+
+  const purchaseStars = async (amount) => {
+    if (!user?.id) return;
+    try {
+      setMessage('');
+      const res = await fetch('/api/payments/purchase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, amount }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Purchase failed');
+      setMessage(`✅ Пополнено на ${amount} ⭐️`);
+      await refreshUser();
+    } catch (err) {
+      setMessage(`❌ ${err.message}`);
+    }
+  };
 
   return (
     <div className="profile-container">
@@ -75,7 +115,7 @@ export function Profile() {
         </div>
 
         <div className="profile-section">
-          <h3>🎯 Правила игры</h3>
+          <h3>🎯 ��равила игры</h3>
           <div className="rules-list">
             <div className="rule-item">
               <span className="rule-icon">1️⃣</span>
@@ -100,7 +140,7 @@ export function Profile() {
           <h3>💎 Система заработка</h3>
           <div className="earning-system">
             <div className="system-item">
-              <span className="system-label">За активацию (5 ⭐️ распределяется):</span>
+              <span className="system-label">За активацию (10 ⭐️ распределяется):</span>
               <div className="system-details">
                 <div>📊 Уровень 1 → 35%</div>
                 <div>📊 Уровень 2 → 21%</div>
@@ -146,13 +186,13 @@ export function Profile() {
             <div className="faq-item">
               <div className="faq-question">Как увеличить уровень доступа?</div>
               <div className="faq-answer">
-                Приглашайте больше рефералов. С каждым порогом количества приглашённых разблокируются новые уровни.
+                Приглашайте больше рефералов. С каждым порогом количества приглашё��ных разблокируются новые уровни.
               </div>
             </div>
             <div className="faq-item">
               <div className="faq-question">Безопасно ли это?</div>
               <div className="faq-answer">
-                Это учебный проект. Не инвестируйте реальные деньги. Используется только виртуальная валюта (звёзды).
+                Это коммерческий проект. Звёзды — внутренняя валюта проекта и имеют денежную ценность. Пожалуйста, действуйте осторожно и читайте правила.
               </div>
             </div>
           </div>

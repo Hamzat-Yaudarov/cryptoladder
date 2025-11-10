@@ -6,6 +6,7 @@ import { createBot } from './bot.js';
 import authRoutes from './routes/auth.js';
 import activationRoutes from './routes/activation.js';
 import pyramidRoutes from './routes/pyramid.js';
+import paymentsRoutes from './routes/payments.js';
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/activation', activationRoutes);
 app.use('/api/pyramid', pyramidRoutes);
+app.use('/api/payments', paymentsRoutes);
 
 // Serve static files from client/dist
 app.use(express.static('client/dist'));

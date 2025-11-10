@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useUser } from '../../context/UserContext';
 import '../styles/Home.css';
 
@@ -6,6 +7,55 @@ export function Home() {
   const { user, error: initError, refreshUser } = useUser();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [structure, setStructure] = useState(null);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    const loadStructure = async () => {
+      try {
+        const res = await fetch(`/api/pyramid/structure/${user.id}?depth=3`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data && data.structure) {
+          // build tree
+          const rows = data.structure;
+          const map = {};
+          rows.forEach(r => { map[r.id] = { ...r, children: [] }; });
+          let root = map[user.id] || { id: user.id, children: [] };
+          rows.forEach(r => {
+            if (r.parent_id && map[r.parent_id]) {
+              map[r.parent_id].children.push(map[r.id]);
+            }
+          });
+          setStructure(root);
+        }
+      } catch (err) {
+        console.error('Error loading structure:', err);
+      }
+    };
+    loadStructure();
+  }, [user?.id]);
+
+  const renderNode = (node) => {
+    if (!node) return null;
+    return (
+      <ul className="pyramid-node">
+        <li>
+          <div className="node-card">
+            <div className="node-name">{node.username || `#${node.id}`}</div>
+            <div className="node-position">pos: {node.position_in_parent || 0}</div>
+          </div>
+          {node.children && node.children.length > 0 && (
+            <div className="node-children">
+              {node.children.map(child => (
+                <div key={child.id}>{renderNode(child)}</div>
+              ))}
+            </div>
+          )}
+        </li>
+      </ul>
+    );
+  };
 
   const handleActivate = async () => {
     if (!user?.id) return;
@@ -164,7 +214,7 @@ export function Home() {
         <div className="pyramid-position">
           {user.parent_id ? (
             <div className="position-info">
-              ✅ Вы в структуре пирамиды
+              ✅ Вы в с��руктуре пирамиды
               <br />
               <small>Позиция: {user.position_in_parent}/3</small>
             </div>
@@ -173,6 +223,10 @@ export function Home() {
               ⏳ Купите место, чтобы присоединиться к пирамиде
             </div>
           )}
+
+          <div className="pyramid-visual">
+            {structure ? renderNode(structure) : <div className="loading-spinner small" />}
+          </div>
         </div>
       </div>
     </div>
