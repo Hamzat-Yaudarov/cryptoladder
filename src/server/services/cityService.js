@@ -41,7 +41,7 @@ export async function createCity(userId) {
       `INSERT INTO cities (user_id, level, houses, balance)
        VALUES ($1, $2, $3, $4)
        RETURNING *`,
-      [userId, 1, 2, 0.00]
+      [userId, 2, 2, 0.00]
     );
 
     return result.rows[0];

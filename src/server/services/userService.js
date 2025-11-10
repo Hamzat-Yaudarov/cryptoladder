@@ -27,7 +27,7 @@ export async function getOrCreateUser(telegramId, options = {}) {
       `INSERT INTO cities (user_id, level, houses, balance)
        VALUES ($1, $2, $3, $4)
        RETURNING id`,
-      [newUser.id, 1, 2, 0.00]
+      [newUser.id, 2, 2, 0.00]
     );
 
     const cityId = cityResult.rows[0].id;
