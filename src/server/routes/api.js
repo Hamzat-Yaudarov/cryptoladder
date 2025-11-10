@@ -8,11 +8,14 @@ import { query } from '../db/client.js';
 
 const router = express.Router();
 
-// Disable caching for API endpoints
+// Полностью отключаем кэширование API
 router.use((req, res, next) => {
-  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+  res.removeHeader('ETag');
+  res.removeHeader('Last-Modified');
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0');
   res.set('Pragma', 'no-cache');
-  res.set('Expires', '0');
+  res.set('Expires', '-1');
+  res.set('Surrogate-Control', 'no-store');
   next();
 });
 

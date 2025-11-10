@@ -20,7 +20,26 @@ app.use(cors());
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 
-app.use(express.static(path.join(__dirname, 'dist')));
+// Полностью отключаем кэширование для всех ответов
+app.use((req, res, next) => {
+  // Удаляем заголовки которые могут привести к кэшированию
+  res.removeHeader('ETag');
+  res.removeHeader('Last-Modified');
+
+  // Устанавливаем антикэш заголовки
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '-1');
+  res.set('Surrogate-Control', 'no-store');
+
+  next();
+});
+
+app.use(express.static(path.join(__dirname, 'dist'), {
+  maxAge: 0,
+  etag: false,
+  lastModified: false,
+}));
 app.use('/api', apiRouter);
 app.use('/bot', botRouter);
 
