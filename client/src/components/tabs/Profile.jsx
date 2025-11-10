@@ -1,4 +1,3 @@
-import React from 'react';
 import React, { useState } from 'react';
 import { useUser } from '../../context/UserContext';
 import '../styles/Profile.css';
@@ -86,7 +85,7 @@ export function Profile() {
             <div className="info-row">
               <span className="info-label">Статус:</span>
               <span className={`status-badge ${user?.parent_id ? 'active' : 'inactive'}`}>
-                {user?.parent_id ? '✅ В структуре' : '⏳ Новичок'}
+                {user?.parent_id ? '✅ В ��труктуре' : '⏳ Новичок'}
               </span>
             </div>
             <div className="info-row">
@@ -169,7 +168,7 @@ export function Profile() {
         </div>
 
         <div className="profile-section">
-          <h3>❓ Часто задаваемые вопросы</h3>
+          <h3>��� Часто задаваемые вопросы</h3>
           <div className="faq-list">
             <div className="faq-item">
               <div className="faq-question">Как получить первые звёзды?</div>
