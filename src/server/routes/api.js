@@ -10,12 +10,18 @@ const router = express.Router();
 
 // Полностью отключаем кэширование API
 router.use((req, res, next) => {
-  res.removeHeader('ETag');
-  res.removeHeader('Last-Modified');
-  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0');
-  res.set('Pragma', 'no-cache');
-  res.set('Expires', '-1');
-  res.set('Surrogate-Control', 'no-store');
+  const originalJson = res.json;
+
+  res.json = function(data) {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    res.set('Surrogate-Control', 'no-store');
+    res.removeHeader('ETag');
+    res.removeHeader('Last-Modified');
+    return originalJson.call(this, data);
+  };
+
   next();
 });
 

@@ -20,18 +20,42 @@ app.use(cors());
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 
-// Полностью отключаем кэширование для всех ответов
+// Отключаем встроенное кэширование Express
+app.disable('etag');
+app.set('view cache', false);
+
+// Полностью отключаем кэширование для всех ответов И игнорируем условные запросы
 app.use((req, res, next) => {
-  // Удаляем заголовки которые могут привести к кэшированию
-  res.removeHeader('ETag');
-  res.removeHeader('Last-Modified');
+  // Удаляем заголовки которые могут привести к 304 ответам
+  delete req.headers['if-none-match'];
+  delete req.headers['if-modified-since'];
+  delete req.headers['if-match'];
+  delete req.headers['if-unmodified-since'];
 
-  // Устанавливаем антикэш заголовки
-  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
-  res.set('Pragma', 'no-cache');
-  res.set('Expires', '-1');
-  res.set('Surrogate-Control', 'no-store');
+  const originalJson = res.json;
+  const originalSend = res.send;
 
+  // Перехватываем отправку для добавления заголовков
+  const setNoCacheHeaders = () => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    res.set('Surrogate-Control', 'no-store');
+    res.removeHeader('ETag');
+    res.removeHeader('Last-Modified');
+  };
+
+  res.json = function(data) {
+    setNoCacheHeaders();
+    return originalJson.call(this, data);
+  };
+
+  res.send = function(data) {
+    setNoCacheHeaders();
+    return originalSend.call(this, data);
+  };
+
+  setNoCacheHeaders();
   next();
 });
 
@@ -39,6 +63,14 @@ app.use(express.static(path.join(__dirname, 'dist'), {
   maxAge: 0,
   etag: false,
   lastModified: false,
+  cacheControl: false,
+  setHeaders: (res) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    res.removeHeader('ETag');
+    res.removeHeader('Last-Modified');
+  },
 }));
 app.use('/api', apiRouter);
 app.use('/bot', botRouter);
