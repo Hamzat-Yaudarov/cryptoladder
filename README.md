@@ -1,262 +1,215 @@
-# CityLadder - Telegram MiniApp Game
+# 🏙️ CityLadder - Telegram MiniApp
 
-🌆 **CityLadder** is an economic Telegram MiniApp game where players build cities, invite friends, and earn Telegram Stars through factory production and resident networks.
+Экономическая игра на Telegram, где пользователи строят города, приглашают жителей и зарабатывают звёзды ⭐️.
 
-## Features
+## 🚀 Инструкция по развёртыванию
 
-### 🎮 Core Gameplay
-- **Build Your City**: Expand with houses to increase depth levels
-- **Activate Factories**: Run factories to earn passive income (10⭐️/24h)
-- **Invite Friends**: Grow your network with referral codes
-- **Earn Stars**: Get income from residents at different depth levels
-
-### 📊 Economic System
-- **5-Level Income Structure**:
-  - Level 1: 3 residents × 4⭐️ = 12⭐️/day
-  - Level 2: 9 residents × 2.5⭐️ = 22.5⭐️/day
-  - Level 3: 27 residents × 1.7⭐️ = 45.9⭐️/day
-  - Level 4: 81 residents × 1⭐️ = 81⭐️/day
-  - Level 5: 243 residents × 0.5⭐️ = 121.5⭐️/day
-
-- **Weekly Rankings**:
-  - 🥇 Rank 1: 100⭐️
-  - 🥈 Rank 2: 75⭐️
-  - 🥉 Rank 3: 50⭐️
-  - 4-5: 25⭐️ & 15⭐️
-
-### 📱 MiniApp Tabs
-1. **🏙 City** - Main dashboard with balance, factory status, referral code
-2. **👥 Residents** - View residents by level and income distribution
-3. **💸 Income** - Track earnings, transactions, statistics
-4. **🏗️ Construction** - Upgrade city levels and view earnings potential
-5. **⚙️ Profile** - User info, stats, rankings, game rules
-
-## Architecture
-
-### Backend Stack
-- **Runtime**: Node.js with Express.js
-- **Database**: PostgreSQL (Neon)
-- **Bot**: Telegram Bot API
-- **Hosting**: Railway
-
-### Frontend Stack
-- **Framework**: Vanilla JavaScript (no build required)
-- **Styling**: CSS3 with CSS variables
-- **Telegram Integration**: Telegram Web App SDK
-
-### Project Structure
-```
-cityladder-bot/
-├── server/                    # Backend code
-│   ├── index.js              # Main server file
-│   ├── db.js                 # Database connection
-│   ├── services/             # Business logic
-│   │   ├── userService.js
-│   │   ├── cityService.js
-│   │   ├── profitService.js
-│   │   └── referralService.js
-│   ├── routes/               # API endpoints
-│   │   ├── api.js
-│   │   └── bot.js
-│   └── utils/
-│       └── helpers.js
-├── database/
-│   └── schema.sql            # PostgreSQL schema
-├── public/                   # Frontend (MiniApp)
-│   ├── index.html
-│   ├── js/
-│   │   └── app.js
-│   └── styles/
-│       ├── app.css
-│       └── tabs/             # Tab-specific styles
-├── package.json
-└── .env.example
-```
-
-## Setup & Deployment
-
-### Prerequisites
-- Node.js 18+
-- PostgreSQL (via Neon)
+### Требования
+- Node.js 16+
+- PostgreSQL (Neon)
 - Telegram Bot Token
-- Railway account (for hosting)
 
-### 1. Clone & Install
+### Установка зависимостей
+
 ```bash
-git clone <repo-url>
-cd cityladder-bot
 npm install
 ```
 
-### 2. Environment Setup
-```bash
-cp .env.example .env
-# Edit .env with your credentials:
-# - BOT_TOKEN: Your Telegram bot token
-# - DATABASE_URL: Your Neon PostgreSQL connection string
-# - WEBAPP_URL: Your deployed Railway app URL
+### Конфигурация окружения
+
+Обновите переменные в `.env` файле:
+
+```env
+NODE_ENV=production
+PORT=8080
+BOT_TOKEN=ваш_токен_бота
+BOT_USERNAME=имя_бота
+WEBAPP_URL=��аш_публичный_URL
+DATABASE_URL=ваша_строка_подключения_postgres
 ```
 
-### 3. Database Initialization
-The database schema is automatically initialized on server startup via `database/schema.sql`.
+### Инициализация базы данных
 
-### 4. Start Development Server
+База данных инициализируется автоматически при запуске сервера. Схема находится в `database/schema.sql`.
+
+### Запуск проекта
+
+```bash
+npm start
+```
+
+Или для разработки:
+
 ```bash
 npm run dev
 ```
 
-### 5. Deploy to Railway
-```bash
-# Railway auto-deploys from git
-# Just push your code:
-git push origin main
+## 📁 Структура проекта
+
+```
+├── bot/
+│   └── telegramBot.js          # Логика Telegram бота
+├── database/
+│   ├── client.js               # Клиент для подключения к БД
+│   └── schema.sql              # Схема базы данных
+├── services/
+│   ├── userService.js          # Управление пользователями
+│   ├── cityService.js          # Управление городами
+│   ├── factoryService.js       # Управление заводами и доходом
+│   ├── residentService.js      # Управление жителями/реферралами
+│   └── ratingService.js        # Еженедельный рейтинг
+├── routes/
+│   └── api.js                  # API маршруты
+├── server/
+│   └── index.js                # Express сервер
+├── frontend/
+│   ├── src/
+│   │   ├── App.jsx            # Главный компонент
+│   │   ├── main.jsx           # Точка входа React
+│   │   ├── tabs/              # Компоненты вкладок
+│   │   ├── components/        # Переиспользуемые компоненты
+│   │   ├── hooks/             # Custom React hooks
+│   │   └── styles/            # CSS файлы
+│   └── index.html
+├── vite.config.js             # Конфигурация Vite
+├── package.json
+├── .env
+└── README.md
 ```
 
-### 6. Configure Telegram Webhook
-The webhook is automatically set when the server starts. Ensure your Railway URL is set in the environment variables.
+## 🎮 Основные функции
 
-## Bot Commands
+### 1. Создание города
+- Стоимость: 3⭐️
+- Получение: 2 дома, 1 завод, реферальная ссылка
 
-### `/start`
-Welcome message with link to open the MiniApp
+### 2. Управление заводом
+- Активация: 10⭐️ на 24 часа
+- Прибыль распределяется жителям по уровням
 
-### `/city`
-Show current city status, balance, and factory info
+### 3. Система реферралов
+- Приглашённые игроки становятся жителями
+- Автоматическое распределение по уровням (до 5)
+- Доход от их активности
 
-### `/referrals`
-List all your referrals with their stats
+### 4. Еженедельный рейтинг
+- Top 5 игроков получают награды
+- 🥇 1 место: 100⭐️
+- 🥈 2 место: 75⭐️
+- 🥉 3 место: 50⭐️
+- 4-5 места: 25⭐️ и 15⭐️
 
-### `/help`
-Display game rules and how to play
+### 5. Система доходов
+Прибыль от активированного завода распределяется:
+- Уровень 1 (3 игрока): 4⭐️ за игрока
+- Уровень 2 (9 игроков): 2.5⭐️ за игрока
+- Уровень 3 (27 игроков): 1.7⭐️ за игрока
+- Уровень 4 (81 игрок): 1⭐️ за игрока
+- Уровень 5 (243 игрока): 0.5⭐️ за игрока
 
-## API Endpoints
+## 🔗 API Endpoints
 
-### Authentication
-- `POST /api/auth/user` - Authenticate Telegram user
+### User
+- `GET /api/user` - Получить информацию о пользователе
+- `GET /api/profit-history` - История выплат
+- `GET /api/profit-today` - Доход за сегодня
 
-### City Management
-- `GET /api/city/:userId` - Get city data
-- `POST /api/factory/activate` - Activate factory for 24h
-- `POST /api/maintenance/check-factories` - Deactivate expired factories
+### City
+- `POST /api/city/create` - Создать город (3⭐️)
+- `GET /api/city` - Получить информацию о городе
+- `POST /api/city/upgrade` - Улучшить город
 
-### Income & Profits
-- `GET /api/profit/summary/:userId` - Get hourly/daily/weekly profit
-- `GET /api/stats/:userId` - Get user statistics
-- `POST /api/balance/add` - Add stars (testing)
+### Factory
+- `POST /api/factory/activate` - Активировать завод (10⭐️)
+- `GET /api/factory/active` - Получить активные заводы
+- `GET /api/factory/stats` - Статистика завод��в
 
-### Referrals & Rankings
-- `GET /api/referrals/:userId` - Get user's referrals
-- `POST /api/referral/join` - Join city via code
-- `POST /api/referral/claim-bonus` - Claim referral bonus
-- `GET /api/rankings/weekly` - Get weekly rankings
+### Residents
+- `GET /api/residents` - Список жителей
+- `GET /api/residents/count` - Количество жителей
+- `GET /api/residents/distribution` - Распределение по уровням
 
-### Transactions
-- `GET /api/transactions/:userId` - Get transaction history
+### Rating
+- `GET /api/rating/current` - Текущий рейтинг пользователя
+- `GET /api/rating/top` - Топ рейтинга
+- `POST /api/rating/claim-reward` - Получить награду
 
-## Database Schema
+## 🛡️ Безопасность
 
-### Key Tables
-- **users** - Telegram user data
-- **cities** - City information per user
-- **houses** - House/depth levels
-- **factories** - Factory activation status
-- **referrals** - Invite relationships
-- **profit_history** - Income records
-- **weekly_rankings** - Weekly competition data
-- **transactions** - Star transactions
+- Все операции требуют telegram_id
+- Проверка баланса перед транзакциями
+- Защита от накруток через проверку Telegram ID
+- SSL для БД подключения
 
-## Scheduled Jobs
+## 📱 Telegram MiniApp
 
-### Every 10 Minutes
-- Check and deactivate expired factories
+- Webhook для получения обновлений от бота
+- Web App для игровой логики
+- Поддержка Telegram Web App API
 
-### Daily (Midnight UTC)
-- Distribute weekly ranking rewards
+## 🔄 Жизненный цикл игрока
 
-## Development Notes
+1. Пользователь нажимает кнопку "Открыть игру" в боте
+2. Загружается MiniApp
+3. Создаёт город (опционально)
+4. Активирует завод (опционально)
+5. Приглашает друзей по реферальной ссылке
+6. Приглашённые игроки становятся жителями
+7. Получает доход каждый час от активных заводов жителей
+8. Участвует в еженедельном рейтинге
 
-### Adding a New Tab
-1. Create component in `public/components/tabs/NewTab.jsx`
-2. Add CSS in `public/styles/tabs/new-tab.css`
-3. Update `ui.switchTab()` in `/public/js/app.js`
-4. Add tab button in `ui.renderApp()`
+## 🐛 Troubleshooting
 
-### Modifying Database Schema
-1. Update `database/schema.sql`
-2. The schema is re-run on server restart
+### Проблема с подключением к БД
+- Проверьте DATABASE_URL в .env
+- Убедитесь, что Neon аккаунт активен
 
-### Adding API Endpoints
-1. Create route in `server/routes/api.js` or `server/routes/bot.js`
-2. Add service logic in `server/services/`
-3. Call from frontend via `api.call()`
+### Бот не отвечает
+- Проверьте BOT_TOKEN в .env
+- Убедитесь, что WEBAPP_URL доступен
+- Проверьте логи сервера
 
-## Security Notes
+### MiniApp не загружается
+- Проверьте, что фронтенд собран: `npm run build`
+- Убедитесь, что WEBAPP_URL правильно установлен в .env
 
-⚠️ **Environment Variables**
-- Never commit `.env` file
-- All secrets are passed via environment variables
-- Database connection uses SSL/TLS
+## 📊 Мониторинг
 
-⚠️ **Telegram Verification**
-- User data is verified via Telegram WebApp SDK
-- Bot webhook validates updates from Telegram
+Логи выводятся в консоль. Для продакшена рекомендуется использовать:
+- Sentry для отслеживания ошибок
+- логирование в файлы
 
-⚠️ **Referral System**
-- Referral codes are hashed and unique per city
-- Prevented duplicate referrals via UNIQUE constraint
-- All relationships verified via Telegram ID
+## 🚀 Развёртывание на Railway
 
-## Performance Considerations
+1. Подключите репозиторий к Railway
+2. Установите переменные окружения в Railway dashboard
+3. Railway автоматически запустит `npm start`
+4. МiniApp будет доступен по WEBAPP_URL
 
-### Database
-- Indexed on frequently queried columns
-- Referral tree uses recursive CTE
-- Profit distribution uses batch inserts
+## 📈 Масштабир��вание
 
-### API Rate Limiting
-- Should be added before production
-- Implement via `express-rate-limit`
+Для большого количества игроков:
+- Используйте Redis для кеширования
+- Оптимизируйте запросы к БД (индексы уже созданы)
+- Рассмотрите микросервисы для обработки доходов
+- Настройте CDN для статики
 
-### Frontend
-- No build step required (faster development)
-- CSS is inlined to reduce requests
-- Vanilla JS (no framework overhead)
+## 📝 Лицензия
 
-## Troubleshooting
+MIT
 
-### "Unable to get Telegram user data"
-- Ensure you're opening the app via Telegram MiniApp
-- Check that `WEBAPP_URL` environment variable is set correctly
+## 👨‍💻 Разработка
 
-### Database Connection Error
-- Verify `DATABASE_URL` format
-- Check that Neon database is active
-- Ensure SSL mode is enabled
+Дополнительные команды:
 
-### Factory Not Activating
-- Check user balance (need 10⭐️)
-- Verify city exists for user
-- Check database permissions
+```bash
+# Собрать фронтенд
+npm run build
 
-## Future Enhancements
-
-- [ ] Telegram Stars payment integration
-- [ ] City customization/themes
-- [ ] Real-time WebSocket updates
-- [ ] In-game events/bonuses
-- [ ] Leaderboard persistence
-- [ ] User achievements/badges
-- [ ] Gift system between users
-- [ ] Mobile app version
-
-## License
-
-Proprietary - All rights reserved
-
-## Support
-
-Contact the development team for support or feature requests.
+# Предпросмотр собранного фронтенда
+npm run preview
+```
 
 ---
 
-Built with ❤️ for Telegram
+**CityLadder v1.0.0** - Вашему успеху! 🚀

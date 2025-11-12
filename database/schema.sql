@@ -1,105 +1,81 @@
--- CityLadder Database Schema
-
--- Users (Players)
+-- Users table
 CREATE TABLE IF NOT EXISTS users (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id SERIAL PRIMARY KEY,
   telegram_id BIGINT UNIQUE NOT NULL,
   username VARCHAR(255),
   first_name VARCHAR(255),
   last_name VARCHAR(255),
+  balance DECIMAL(18, 2) DEFAULT 0,
+  total_referrals INT DEFAULT 0,
+  is_city_active BOOLEAN DEFAULT FALSE,
+  city_level INT DEFAULT 1,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  last_profit_claim TIMESTAMP,
+  referrer_id BIGINT REFERENCES users(telegram_id) ON DELETE SET NULL
 );
 
--- Cities (Each user has one city)
+-- Cities table
 CREATE TABLE IF NOT EXISTS cities (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id SERIAL PRIMARY KEY,
   user_id BIGINT UNIQUE NOT NULL REFERENCES users(telegram_id) ON DELETE CASCADE,
+  houses INT DEFAULT 2,
+  factory_count INT DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Residents table (referrals/inhabitants)
+CREATE TABLE IF NOT EXISTS residents (
+  id SERIAL PRIMARY KEY,
+  city_owner_id BIGINT NOT NULL REFERENCES users(telegram_id) ON DELETE CASCADE,
+  resident_id BIGINT NOT NULL REFERENCES users(telegram_id) ON DELETE CASCADE,
   level INT DEFAULT 1,
-  total_houses INT DEFAULT 2,
-  referral_code VARCHAR(255) UNIQUE NOT NULL,
-  balance DECIMAL(15,2) DEFAULT 0,
-  is_factory_active BOOLEAN DEFAULT FALSE,
-  factory_activated_at TIMESTAMP,
-  factory_expires_at TIMESTAMP,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  is_active BOOLEAN DEFAULT TRUE,
+  UNIQUE(city_owner_id, resident_id)
 );
 
--- Houses (Depth levels)
-CREATE TABLE IF NOT EXISTS houses (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  city_id UUID NOT NULL REFERENCES cities(id) ON DELETE CASCADE,
-  level INT NOT NULL,
-  resident_user_id BIGINT REFERENCES users(telegram_id) ON DELETE SET NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Factories (Daily income sources)
+-- Factories table (active factory runs)
 CREATE TABLE IF NOT EXISTS factories (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  city_id UUID NOT NULL REFERENCES cities(id) ON DELETE CASCADE,
-  is_active BOOLEAN DEFAULT FALSE,
-  activated_at TIMESTAMP,
-  expires_at TIMESTAMP,
-  last_payout_time TIMESTAMP,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Referrals (Invite relationships)
-CREATE TABLE IF NOT EXISTS referrals (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  referrer_user_id BIGINT NOT NULL REFERENCES users(telegram_id) ON DELETE CASCADE,
-  referred_user_id BIGINT NOT NULL REFERENCES users(telegram_id) ON DELETE CASCADE,
-  house_level INT NOT NULL,
-  bonus_claimed BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE(referrer_user_id, referred_user_id)
-);
-
--- Profit Distribution History
-CREATE TABLE IF NOT EXISTS profit_history (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id BIGINT NOT NULL REFERENCES users(telegram_id) ON DELETE CASCADE,
-  source_user_id BIGINT REFERENCES users(telegram_id) ON DELETE SET NULL,
-  amount DECIMAL(15,2) NOT NULL,
-  level INT NOT NULL,
-  factory_id UUID REFERENCES factories(id) ON DELETE SET NULL,
-  payout_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  id SERIAL PRIMARY KEY,
+  owner_id BIGINT NOT NULL REFERENCES users(telegram_id) ON DELETE CASCADE,
+  activated_at TIMESTAMP NOT NULL,
+  expires_at TIMESTAMP NOT NULL,
+  is_active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Weekly Rankings
-CREATE TABLE IF NOT EXISTS weekly_rankings (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- Profit distribution history
+CREATE TABLE IF NOT EXISTS profit_history (
+  id SERIAL PRIMARY KEY,
+  earner_id BIGINT NOT NULL REFERENCES users(telegram_id) ON DELETE CASCADE,
+  factory_owner_id BIGINT NOT NULL REFERENCES users(telegram_id) ON DELETE CASCADE,
+  level INT NOT NULL,
+  amount DECIMAL(18, 2) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Weekly ratings
+CREATE TABLE IF NOT EXISTS weekly_ratings (
+  id SERIAL PRIMARY KEY,
+  week_start DATE NOT NULL,
+  week_end DATE NOT NULL,
   user_id BIGINT NOT NULL REFERENCES users(telegram_id) ON DELETE CASCADE,
-  week_starting DATE NOT NULL,
+  position INT NOT NULL,
   referral_count INT NOT NULL,
-  rank INT,
+  reward DECIMAL(18, 2),
   reward_claimed BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE(user_id, week_starting)
+  UNIQUE(week_start, user_id)
 );
 
--- Transactions (for Star purchases and expenses)
-CREATE TABLE IF NOT EXISTS transactions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id BIGINT NOT NULL REFERENCES users(telegram_id) ON DELETE CASCADE,
-  type VARCHAR(50) NOT NULL,
-  amount DECIMAL(15,2) NOT NULL,
-  description TEXT,
-  status VARCHAR(50) DEFAULT 'completed',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Indexes for performance
+-- Create indexes for better query performance
+CREATE INDEX IF NOT EXISTS idx_users_telegram_id ON users(telegram_id);
 CREATE INDEX IF NOT EXISTS idx_cities_user_id ON cities(user_id);
-CREATE INDEX IF NOT EXISTS idx_houses_city_id ON houses(city_id);
-CREATE INDEX IF NOT EXISTS idx_factories_city_id ON factories(city_id);
-CREATE INDEX IF NOT EXISTS idx_referrals_referrer ON referrals(referrer_user_id);
-CREATE INDEX IF NOT EXISTS idx_referrals_referred ON referrals(referred_user_id);
-CREATE INDEX IF NOT EXISTS idx_profit_history_user ON profit_history(user_id);
-CREATE INDEX IF NOT EXISTS idx_profit_history_time ON profit_history(payout_time);
-CREATE INDEX IF NOT EXISTS idx_weekly_rankings_week ON weekly_rankings(week_starting);
-CREATE INDEX IF NOT EXISTS idx_transactions_user ON transactions(user_id);
+CREATE INDEX IF NOT EXISTS idx_residents_city_owner ON residents(city_owner_id);
+CREATE INDEX IF NOT EXISTS idx_residents_level ON residents(level);
+CREATE INDEX IF NOT EXISTS idx_factories_owner_active ON factories(owner_id, is_active);
+CREATE INDEX IF NOT EXISTS idx_profit_history_earner ON profit_history(earner_id);
+CREATE INDEX IF NOT EXISTS idx_profit_history_owner ON profit_history(factory_owner_id);
+CREATE INDEX IF NOT EXISTS idx_weekly_ratings_week ON weekly_ratings(week_start);

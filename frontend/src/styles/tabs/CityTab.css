@@ -1,0 +1,245 @@
+.city-tab {
+  padding: 16px 0;
+  min-height: 100%;
+}
+
+.city-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  color: white;
+  margin: 0 12px;
+  border-radius: var(--border-radius);
+  gap: 12px;
+}
+
+.city-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.city-level {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.city-tab-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  font-size: 18px;
+}
+
+.city-welcome-card {
+  margin: 16px 12px !important;
+}
+
+.welcome-content {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.welcome-emoji {
+  font-size: 48px;
+  margin: 20px 0;
+  display: block;
+}
+
+.welcome-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 16px 0;
+  color: var(--tg-theme-text-color);
+}
+
+.welcome-description {
+  font-size: 16px;
+  color: var(--tg-theme-hint-color);
+  margin: 12px 0;
+}
+
+.cost-stars {
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+}
+
+.welcome-benefits {
+  text-align: left;
+  margin: 20px 0;
+  font-size: 14px;
+  color: var(--tg-theme-text-color);
+  line-height: 1.8;
+}
+
+.create-city-btn {
+  margin-top: 20px;
+}
+
+.insufficient-balance {
+  color: var(--danger-color);
+  font-size: 14px;
+  margin-top: 12px;
+  font-weight: 500;
+}
+
+.balance-card {
+  margin: 16px 12px !important;
+}
+
+.balance-section {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.balance-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+  background: var(--tg-theme-secondary-bg-color);
+  border-radius: 8px;
+  gap: 4px;
+}
+
+.balance-label {
+  font-size: 12px;
+  color: var(--tg-theme-hint-color);
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.balance-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.factory-status-card {
+  margin: 12px 12px !important;
+}
+
+.factory-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+  color: var(--tg-theme-text-color);
+}
+
+.factories-list {
+  margin-bottom: 16px;
+}
+
+.factory-item {
+  padding: 12px;
+  background: var(--tg-theme-secondary-bg-color);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.factory-status-active {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--success-color);
+  font-weight: 600;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--success-color);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.factory-time {
+  font-size: 14px;
+  color: var(--tg-theme-hint-color);
+}
+
+.no-active-factory {
+  color: var(--tg-theme-hint-color);
+  text-align: center;
+  padding: 12px;
+  font-size: 14px;
+}
+
+.activate-factory-btn {
+  margin-top: 12px;
+}
+
+.city-benefits-card {
+  margin: 12px 12px !important;
+}
+
+.benefits-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 12px 0;
+  color: var(--tg-theme-text-color);
+}
+
+.benefits-list {
+  list-style: none;
+  padding: 0;
+}
+
+.benefits-list li {
+  padding: 8px 0;
+  color: var(--tg-theme-text-color);
+  font-size: 14px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.benefits-list li:last-child {
+  border-bottom: none;
+}
+
+@media (max-width: 480px) {
+  .city-header {
+    margin: 0 8px;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .city-title {
+    font-size: 20px;
+  }
+
+  .welcome-emoji {
+    font-size: 40px;
+  }
+
+  .welcome-title {
+    font-size: 20px;
+  }
+
+  .balance-section {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

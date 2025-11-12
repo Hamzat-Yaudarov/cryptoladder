@@ -1,163 +1,85 @@
-import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import helmet from 'helmet';
-import bodyParser from 'body-parser';
-import path from 'path';
+import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
+import path from 'path';
+import bot from '../bot/telegramBot.js';
+import apiRouter from '../routes/api.js';
+import { initializeDatabase } from '../database/client.js';
 
-import { initializeDatabase } from './db.js';
-import { checkAndDeactivateExpiredFactories } from './services/cityService.js';
-import { distributeWeeklyRewards } from './services/referralService.js';
-import apiRoutes from './routes/api.js';
-import botRoutes, { initializeWebhook } from './routes/bot.js';
+dotenv.config();
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3000;
 
-// ============================================================================
-// MIDDLEWARE
-// ============================================================================
-
-app.use(helmet());
+// Middleware
 app.use(cors());
-app.use(bodyParser.json({ limit: '10mb' }));
-app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
+app.use(express.json());
+app.use(express.static(path.join(__dirname, '../dist')));
 
-// Logging middleware
-app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
-  next();
-});
+// Initialize database
+try {
+  await initializeDatabase();
+  console.log('✅ Database initialized');
+} catch (error) {
+  console.error('❌ Database initialization failed:', error);
+  process.exit(1);
+}
 
-// ============================================================================
-// STATIC FILES (Frontend MiniApp)
-// ============================================================================
+// API Routes
+app.use('/api', apiRouter);
 
-app.use(express.static(path.join(__dirname, '..', 'public')));
+// Telegram webhook
+const BOT_USERNAME = process.env.BOT_USERNAME || 'cryptoladderbot';
+const WEBHOOK_URL = `${process.env.WEBAPP_URL}/webhook/${BOT_USERNAME}`;
 
-// ============================================================================
-// API ROUTES
-// ============================================================================
-
-app.use('/api', apiRoutes);
-app.use('/bot', botRoutes);
-
-// ============================================================================
-// HEALTH CHECK & INFO
-// ============================================================================
-
-app.get('/', (req, res) => {
-  res.json({
-    name: 'CityLadder Bot & MiniApp',
-    version: '1.0.0',
-    status: 'running',
-    timestamp: new Date().toISOString(),
-  });
-});
-
-app.get('/info', (req, res) => {
-  res.json({
-    bot_username: process.env.BOT_USERNAME,
-    webapp_url: process.env.WEBAPP_URL,
-    api_version: 'v1',
-  });
-});
-
-// ============================================================================
-// 404 HANDLER
-// ============================================================================
-
-app.use((req, res) => {
-  res.status(404).json({
-    error: 'Not found',
-    path: req.path,
-  });
-});
-
-// ============================================================================
-// ERROR HANDLER
-// ============================================================================
-
-app.use((err, req, res, next) => {
-  console.error('❌ Error:', err);
-  res.status(500).json({
-    error: 'Internal server error',
-    message: process.env.NODE_ENV === 'development' ? err.message : 'An error occurred',
-  });
-});
-
-// ============================================================================
-// STARTUP
-// ============================================================================
-
-async function startup() {
-  try {
-    console.log('🚀 Starting CityLadder Bot & MiniApp...');
-    
-    // Initialize database
-    await initializeDatabase();
-    
-    // Start server
-    app.listen(PORT, async () => {
-      console.log(`✅ Server running on port ${PORT}`);
-      
-      // Initialize bot webhook
-      await initializeWebhook();
-      
-      // Schedule maintenance tasks
-      scheduleMaintenanceTasks();
+app.post(`/webhook/${BOT_USERNAME}`, (req, res) => {
+  bot.handleUpdate(req.body, res)
+    .then(() => res.status(200).end())
+    .catch((err) => {
+      console.error('Webhook error:', err);
+      res.status(200).end();
     });
-  } catch (error) {
-    console.error('❌ Startup error:', error);
-    process.exit(1);
-  }
-}
+});
 
-// ============================================================================
-// SCHEDULED TASKS
-// ============================================================================
+// Health check
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok' });
+});
 
-function scheduleMaintenanceTasks() {
-  // Check expired factories every 10 minutes
-  setInterval(async () => {
-    try {
-      await checkAndDeactivateExpiredFactories();
-    } catch (error) {
-      console.error('Error in factory maintenance task:', error);
-    }
-  }, 10 * 60 * 1000);
+// Serve MiniApp
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dist/index.html'));
+});
+
+// Start server
+const server = app.listen(PORT, async () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📱 MiniApp available at ${process.env.WEBAPP_URL}`);
+  console.log(`🤖 Telegram bot: @${BOT_USERNAME}`);
+  console.log(`🔗 Webhook URL: ${WEBHOOK_URL}`);
   
-  // Distribute weekly rewards every day at midnight UTC
-  setInterval(async () => {
-    try {
-      const now = new Date();
-      if (now.getHours() === 0 && now.getMinutes() < 1) {
-        await distributeWeeklyRewards();
-      }
-    } catch (error) {
-      console.error('Error in weekly rewards task:', error);
-    }
-  }, 60 * 1000);
-}
+  // Set webhook on startup (optional, can be done via Telegram API)
+  try {
+    await bot.telegram.setWebhook(WEBHOOK_URL, {
+      allowed_updates: ['message', 'callback_query']
+    });
+    console.log('✅ Webhook set successfully');
+  } catch (error) {
+    console.warn('⚠️ Could not set webhook:', error.message);
+  }
+});
 
-// ============================================================================
-// GRACEFUL SHUTDOWN
-// ============================================================================
-
+// Graceful shutdown
 process.on('SIGTERM', () => {
-  console.log('🛑 SIGTERM received, shutting down gracefully');
-  process.exit(0);
+  console.log('SIGTERM received, closing server');
+  server.close(() => {
+    console.log('Server closed');
+    process.exit(0);
+  });
 });
 
-process.on('SIGINT', () => {
-  console.log('🛑 SIGINT received, shutting down gracefully');
-  process.exit(0);
-});
-
-// ============================================================================
-// START
-// ============================================================================
-
-startup();
+export default app;
