@@ -2,12 +2,18 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { testConnection } from './db/connection.js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { testConnection, query } from './db/connection.js';
 import apiRoutes from './api/routes.js';
 import { errorHandler } from './middleware/auth.js';
 import bot from './bot/index.js';
 
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -36,6 +42,31 @@ app.use((req, res) => {
 // Error handler
 app.use(errorHandler);
 
+// Automatic database migration
+async function runMigrations() {
+  try {
+    const schemaPath = path.join(__dirname, 'db', 'schema.sql');
+    const schema = fs.readFileSync(schemaPath, 'utf8');
+
+    console.log('🔄 Running database migrations...');
+
+    const statements = schema
+      .split(';')
+      .map((stmt) => stmt.trim())
+      .filter((stmt) => stmt.length > 0);
+
+    for (const statement of statements) {
+      await query(statement);
+    }
+
+    console.log('✅ Database migrations completed');
+    return true;
+  } catch (error) {
+    console.error('❌ Migration error:', error.message);
+    return false;
+  }
+}
+
 // Initialize server
 async function initialize() {
   try {
@@ -45,6 +76,9 @@ async function initialize() {
       console.error('❌ Failed to connect to database');
       process.exit(1);
     }
+
+    // Run migrations
+    await runMigrations();
 
     // Start Express server
     app.listen(port, () => {
