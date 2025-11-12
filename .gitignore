@@ -14,3 +14,5 @@ build/
 coverage/
 yarn.lock
 package-lock.json
+
+.config/

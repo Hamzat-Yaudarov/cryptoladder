@@ -3,29 +3,44 @@ import { createCity, upgradeCity, getCity, addHouse } from '../services/cityServ
 import { activateFactory, getActiveFactories, getFactoryStats } from '../services/factoryService.js';
 import { addResident, getResidents, getProfitDistribution, getTotalResidents } from '../services/residentService.js';
 import { getWeeklyRating, getTopRatings, claimReward, getCurrentWeeklyRating } from '../services/ratingService.js';
-import { 
-  getUserWithCity, 
-  updateBalance, 
-  getUserStats, 
+import {
+  getUserWithCity,
+  updateBalance,
+  getUserStats,
   getUser,
-  addReferral
+  addReferral,
+  createOrUpdateUser
 } from '../services/userService.js';
 import { query } from '../database/client.js';
 
 const router = express.Router();
 
-// Middleware to verify telegram data (simplified)
-const verifyUser = (req, res, next) => {
-  const telegramId = req.body.telegram_id || req.query.telegram_id || req.headers['x-telegram-id'];
-  if (!telegramId) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
+// Middleware to verify telegram data (accepts body, query, or headers) and ensure user exists
+const verifyUser = async (req, res, next) => {
   try {
-    req.telegramId = BigInt(telegramId);
-  } catch (error) {
-    return res.status(401).json({ error: 'Invalid Telegram ID format' });
+    const headerId = req.header('x-telegram-id');
+    const telegramIdRaw = req.body.telegram_id || req.query.telegram_id || headerId;
+
+    if (!telegramIdRaw) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const telegramId = BigInt(telegramIdRaw);
+    req.telegramId = telegramId;
+
+    // Ensure user exists / update basic profile if provided
+    const existing = await getUser(telegramId);
+    if (!existing) {
+      const username = req.header('x-telegram-username') || null;
+      const first_name = req.header('x-telegram-first-name') || null;
+      const last_name = req.header('x-telegram-last-name') || null;
+      await createOrUpdateUser(telegramId, { username, first_name, last_name });
+    }
+
+    return next();
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
   }
-  next();
 };
 
 // User endpoints

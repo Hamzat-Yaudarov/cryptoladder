@@ -60,14 +60,17 @@ export async function initializeDatabase() {
 
     console.log(`🗄️ Выполнение ${statements.length} SQL операций...`);
 
-    // Drop existing tables in correct order (respecting foreign keys)
-    const tableDropOrder = ['weekly_ratings', 'profit_history', 'factories', 'residents', 'cities', 'users'];
-    for (const table of tableDropOrder) {
-      try {
-        await query(`DROP TABLE IF EXISTS ${table} CASCADE`);
-        console.log(`✓ Таблица ${table} удалена`);
-      } catch (error) {
-        console.warn(`⚠️ Не удалось удалить ${table}: ${error.message}`);
+    // Optionally drop existing tables only when explicitly requested
+    const shouldDrop = process.env.RESET_DB === 'true';
+    if (shouldDrop) {
+      const tableDropOrder = ['weekly_ratings', 'profit_history', 'factories', 'residents', 'cities', 'users'];
+      for (const table of tableDropOrder) {
+        try {
+          await query(`DROP TABLE IF EXISTS ${table} CASCADE`);
+          console.log(`✓ Таблица ${table} удалена`);
+        } catch (error) {
+          console.warn(`⚠️ Не удалось удалить ${table}: ${error.message}`);
+        }
       }
     }
 

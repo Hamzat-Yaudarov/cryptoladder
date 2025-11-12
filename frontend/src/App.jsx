@@ -10,7 +10,7 @@ import Loading from './components/Loading';
 import './styles/App.css';
 
 const TABS = [
-  { id: 'city', label: '🏙 Город', icon: '��️' },
+  { id: 'city', label: '🏙 Город', icon: '🏘️' },
   { id: 'residents', label: '👥 Жители', icon: '👫' },
   { id: 'income', label: '💸 Доход', icon: '📈' },
   { id: 'build', label: '🏗 Строительство', icon: '🔨' },
@@ -25,8 +25,6 @@ export default function App() {
 
   useEffect(() => {
     // Initialize Telegram Web App
-    let tgId = null;
-
     if (window.Telegram?.WebApp) {
       const webapp = window.Telegram.WebApp;
       webapp.ready();
@@ -36,41 +34,27 @@ export default function App() {
       if (webapp.colorScheme === 'dark') {
         document.body.classList.add('dark-theme');
       }
-
-      // Parse initData to get user ID
-      if (webapp.initData) {
-        try {
-          const params = new URLSearchParams(webapp.initData);
-          const userStr = params.get('user');
-          if (userStr) {
-            const user = JSON.parse(userStr);
-            tgId = user?.id?.toString();
-            console.log('✅ Got telegram ID from initData:', tgId);
-          }
-        } catch (error) {
-          console.warn('Failed to parse initData:', error);
-        }
-      }
-
-      // Fallback: try to get from initDataUnsafe
-      if (!tgId && webapp.initDataUnsafe?.user?.id) {
-        tgId = webapp.initDataUnsafe.user.id.toString();
-        console.log('✅ Got telegram ID from initDataUnsafe:', tgId);
-      }
     }
 
-    // Final fallback to storage
-    if (!tgId) {
-      tgId = sessionStorage.getItem('telegramId') || localStorage.getItem('telegramId');
-      console.log('Got telegram ID from storage:', tgId);
-    }
+    // Get telegram user from initDataUnsafe
+    const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+
+    // Try to get telegram ID from various sources
+    const tgId = tgUser?.id?.toString() ||
+                 sessionStorage.getItem('telegramId') ||
+                 localStorage.getItem('telegramId') ||
+                 (!import.meta.env.PROD ? '123456789' : null);
 
     if (tgId) {
       setTelegramId(BigInt(tgId));
       sessionStorage.setItem('telegramId', tgId);
-      console.log('Setting telegramId:', tgId);
-    } else {
-      console.error('❌ Could not get telegram ID from any source');
+    }
+
+    // Store basic user info for backend upsert via headers
+    if (tgUser) {
+      if (tgUser.username) sessionStorage.setItem('telegramUsername', tgUser.username);
+      if (tgUser.first_name) sessionStorage.setItem('telegramFirstName', tgUser.first_name);
+      if (tgUser.last_name) sessionStorage.setItem('telegramLastName', tgUser.last_name);
     }
 
     setLoading(false);

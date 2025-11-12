@@ -14,6 +14,9 @@ export function useApi() {
         headers: {
           'Content-Type': 'application/json',
           'X-Telegram-ID': sessionStorage.getItem('telegramId') || localStorage.getItem('telegramId'),
+          'X-Telegram-Username': sessionStorage.getItem('telegramUsername') || localStorage.getItem('telegramUsername') || '',
+          'X-Telegram-First-Name': sessionStorage.getItem('telegramFirstName') || localStorage.getItem('telegramFirstName') || '',
+          'X-Telegram-Last-Name': sessionStorage.getItem('telegramLastName') || localStorage.getItem('telegramLastName') || '',
           ...options.headers,
         },
       });
