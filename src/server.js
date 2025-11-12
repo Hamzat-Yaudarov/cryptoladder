@@ -52,16 +52,21 @@ async function initialize() {
       console.log(`🌐 Web App: ${process.env.WEB_APP_URL}`);
     });
 
-    // Start Telegram bot
-    bot
-      .launch()
-      .then(() => {
-        console.log('✅ Telegram bot is running');
-        console.log(`🤖 Bot: @${process.env.TELEGRAM_BOT_USERNAME}`);
-      })
-      .catch((error) => {
-        console.error('❌ Failed to launch bot:', error);
-      });
+    // Start Telegram bot (non-blocking)
+    if (process.env.TELEGRAM_BOT_TOKEN) {
+      bot
+        .launch()
+        .then(() => {
+          console.log('✅ Telegram bot is running');
+          console.log(`🤖 Bot: @${process.env.TELEGRAM_BOT_USERNAME}`);
+        })
+        .catch((error) => {
+          console.error('❌ Failed to launch bot:', error.message);
+          console.warn('⚠️  Bot is not running, but MiniApp will continue to work');
+        });
+    } else {
+      console.warn('⚠️  TELEGRAM_BOT_TOKEN not set - bot will not run');
+    }
 
     // Enable graceful stop
     process.once('SIGINT', () => bot.stop('SIGINT'));

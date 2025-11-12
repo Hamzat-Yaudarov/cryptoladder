@@ -7,7 +7,11 @@ import { ReferralService } from '../services/referralService.js';
 
 dotenv.config();
 
-const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
+if (!process.env.TELEGRAM_BOT_TOKEN) {
+  console.warn('⚠️  TELEGRAM_BOT_TOKEN not set. Bot will not run.');
+}
+
+const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN || '');
 
 // Start command
 bot.command('start', async (ctx) => {
@@ -84,10 +88,10 @@ bot.command('help', async (ctx) => {
 
 💰 Экономика:
 - 🏠 Дома дают уровни дохода
-- 🏭 Заводы генерируют прибыль
+- 🏭 Заводы генерируют п��ибыль
 - 👥 Прибыль распределяется по уровням
 
-🎁 Награды:
+🎁 На��рады:
 - Бонусы за рефереал
 - Еженедельный рейтинг
 - Специальные события
@@ -132,7 +136,7 @@ bot.command('about', async (ctx) => {
   const message = `
 ℹ️ О CityLadder
 
-CityLadder - это экономическая Telegram MiniApp-игра, созданная для развлечения и заработка звёзд.
+CityLadder - это экономическая Telegram MiniApp-иг��а, созданная для развлечения и заработка звёзд.
 
 🎮 Разработчик: CryptoLadder Team
 🌐 Сайт: https://cryptoladder.io
@@ -142,5 +146,16 @@ CityLadder - это экономическая Telegram MiniApp-игра, соз
     `;
   await ctx.reply(message.trim());
 });
+
+// Add fallback methods if token is missing
+if (!process.env.TELEGRAM_BOT_TOKEN) {
+  bot.launch = async () => {
+    console.warn('⚠️  Cannot launch bot: TELEGRAM_BOT_TOKEN not set');
+    return Promise.resolve();
+  };
+  bot.stop = () => {
+    console.warn('⚠️  Bot is not running');
+  };
+}
 
 export default bot;
