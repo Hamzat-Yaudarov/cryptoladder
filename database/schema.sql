@@ -1,7 +1,16 @@
 -- CityLadder Database Schema
+-- Drop existing tables to ensure clean schema
+DROP TABLE IF EXISTS transactions CASCADE;
+DROP TABLE IF EXISTS weekly_rankings CASCADE;
+DROP TABLE IF EXISTS profit_history CASCADE;
+DROP TABLE IF EXISTS referrals CASCADE;
+DROP TABLE IF EXISTS factories CASCADE;
+DROP TABLE IF EXISTS houses CASCADE;
+DROP TABLE IF EXISTS cities CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
 
 -- Users (Players)
-CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE users (
   id BIGINT PRIMARY KEY,
   telegram_id BIGINT UNIQUE NOT NULL,
   username VARCHAR(255),
@@ -12,7 +21,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- Cities (Each user has one city)
-CREATE TABLE IF NOT EXISTS cities (
+CREATE TABLE cities (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id BIGINT UNIQUE NOT NULL REFERENCES users(telegram_id) ON DELETE CASCADE,
   level INT DEFAULT 1,
@@ -27,7 +36,7 @@ CREATE TABLE IF NOT EXISTS cities (
 );
 
 -- Houses (Depth levels)
-CREATE TABLE IF NOT EXISTS houses (
+CREATE TABLE houses (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   city_id UUID NOT NULL REFERENCES cities(id) ON DELETE CASCADE,
   level INT NOT NULL,
@@ -36,7 +45,7 @@ CREATE TABLE IF NOT EXISTS houses (
 );
 
 -- Factories (Daily income sources)
-CREATE TABLE IF NOT EXISTS factories (
+CREATE TABLE factories (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   city_id UUID NOT NULL REFERENCES cities(id) ON DELETE CASCADE,
   is_active BOOLEAN DEFAULT FALSE,
@@ -48,7 +57,7 @@ CREATE TABLE IF NOT EXISTS factories (
 );
 
 -- Referrals (Invite relationships)
-CREATE TABLE IF NOT EXISTS referrals (
+CREATE TABLE referrals (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   referrer_user_id BIGINT NOT NULL REFERENCES users(telegram_id) ON DELETE CASCADE,
   referred_user_id BIGINT NOT NULL REFERENCES users(telegram_id) ON DELETE CASCADE,
@@ -59,7 +68,7 @@ CREATE TABLE IF NOT EXISTS referrals (
 );
 
 -- Profit Distribution History
-CREATE TABLE IF NOT EXISTS profit_history (
+CREATE TABLE profit_history (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id BIGINT NOT NULL REFERENCES users(telegram_id) ON DELETE CASCADE,
   source_user_id BIGINT REFERENCES users(telegram_id) ON DELETE SET NULL,
@@ -71,7 +80,7 @@ CREATE TABLE IF NOT EXISTS profit_history (
 );
 
 -- Weekly Rankings
-CREATE TABLE IF NOT EXISTS weekly_rankings (
+CREATE TABLE weekly_rankings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id BIGINT NOT NULL REFERENCES users(telegram_id) ON DELETE CASCADE,
   week_starting DATE NOT NULL,
@@ -83,7 +92,7 @@ CREATE TABLE IF NOT EXISTS weekly_rankings (
 );
 
 -- Transactions (for Star purchases and expenses)
-CREATE TABLE IF NOT EXISTS transactions (
+CREATE TABLE transactions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id BIGINT NOT NULL REFERENCES users(telegram_id) ON DELETE CASCADE,
   type VARCHAR(50) NOT NULL,
@@ -94,12 +103,12 @@ CREATE TABLE IF NOT EXISTS transactions (
 );
 
 -- Indexes for performance
-CREATE INDEX IF NOT EXISTS idx_cities_user_id ON cities(user_id);
-CREATE INDEX IF NOT EXISTS idx_houses_city_id ON houses(city_id);
-CREATE INDEX IF NOT EXISTS idx_factories_city_id ON factories(city_id);
-CREATE INDEX IF NOT EXISTS idx_referrals_referrer ON referrals(referrer_user_id);
-CREATE INDEX IF NOT EXISTS idx_referrals_referred ON referrals(referred_user_id);
-CREATE INDEX IF NOT EXISTS idx_profit_history_user ON profit_history(user_id);
-CREATE INDEX IF NOT EXISTS idx_profit_history_time ON profit_history(payout_time);
-CREATE INDEX IF NOT EXISTS idx_weekly_rankings_week ON weekly_rankings(week_starting);
-CREATE INDEX IF NOT EXISTS idx_transactions_user ON transactions(user_id);
+CREATE INDEX idx_cities_user_id ON cities(user_id);
+CREATE INDEX idx_houses_city_id ON houses(city_id);
+CREATE INDEX idx_factories_city_id ON factories(city_id);
+CREATE INDEX idx_referrals_referrer ON referrals(referrer_user_id);
+CREATE INDEX idx_referrals_referred ON referrals(referred_user_id);
+CREATE INDEX idx_profit_history_user ON profit_history(user_id);
+CREATE INDEX idx_profit_history_time ON profit_history(payout_time);
+CREATE INDEX idx_weekly_rankings_week ON weekly_rankings(week_starting);
+CREATE INDEX idx_transactions_user ON transactions(user_id);
