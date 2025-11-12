@@ -38,11 +38,27 @@ export async function initializeDatabase() {
     const path = await import('path');
     const schemaPath = path.default.join(process.cwd(), 'database', 'schema.sql');
     const schema = fs.readFileSync(schemaPath, 'utf-8');
-    
-    // Split and execute each statement
-    const statements = schema.split(';').filter(stmt => stmt.trim());
+
+    // Split statements by semicolon and clean them
+    const statements = schema
+      .split(';')
+      .map(stmt => {
+        // Remove SQL comments and trim
+        return stmt
+          .split('\n')
+          .filter(line => !line.trim().startsWith('--'))
+          .join('\n')
+          .trim();
+      })
+      .filter(stmt => stmt.length > 0);
+
     for (const statement of statements) {
-      await query(statement);
+      try {
+        await query(statement);
+      } catch (error) {
+        console.error(`Failed to execute statement: ${statement.substring(0, 50)}...`);
+        throw error;
+      }
     }
     console.log('Database schema initialized successfully');
   } catch (error) {
