@@ -8,9 +8,9 @@ export async function createOrUpdateUser(telegramId, userData) {
     `INSERT INTO users (telegram_id, username, first_name, last_name)
      VALUES ($1, $2, $3, $4)
      ON CONFLICT (telegram_id) DO UPDATE SET
-       username = COALESCE($2, username),
-       first_name = COALESCE($3, first_name),
-       last_name = COALESCE($4, last_name),
+       username = COALESCE($2, users.username),
+       first_name = COALESCE($3, users.first_name),
+       last_name = COALESCE($4, users.last_name),
        updated_at = CURRENT_TIMESTAMP
      RETURNING *`,
     [telegramId, username, first_name, last_name]
