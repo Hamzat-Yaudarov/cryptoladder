@@ -17,20 +17,22 @@ const PAYOUT_INTERVAL = 60 * 60 * 1000; // 1 hour in milliseconds (1/24 of daily
  * Get the referral chain/tree for a user
  * Returns hierarchy of referred users with their levels
  */
-export async function getUserReferralTree(userId) {
+export async function getUserReferralTree(telegramId) {
   try {
+    const numTelegramId = Number(telegramId);
+
     const result = await query(
       `WITH RECURSIVE referral_tree AS (
-        SELECT 
+        SELECT
           referred_user_id as user_id,
           1 as level,
           referrer_user_id as parent_id
         FROM referrals
         WHERE referrer_user_id = $1
-        
+
         UNION ALL
-        
-        SELECT 
+
+        SELECT
           r.referred_user_id as user_id,
           rt.level + 1 as level,
           r.referrer_user_id as parent_id
@@ -40,9 +42,9 @@ export async function getUserReferralTree(userId) {
       )
       SELECT user_id, level, parent_id FROM referral_tree
       ORDER BY level, user_id`,
-      [userId]
+      [numTelegramId]
     );
-    
+
     return result.rows;
   } catch (error) {
     console.error('Error getting referral tree:', error);
@@ -54,44 +56,42 @@ export async function getUserReferralTree(userId) {
  * Calculate and distribute profit from a factory
  */
 export async function distributeProfitFromFactory(factoryId) {
-  const client = await query();
-  
   try {
     // Get factory and city information
-    const factoryRes = await client.query(
+    const factoryRes = await query(
       `SELECT f.id, f.city_id, c.user_id, f.last_payout_time
        FROM factories f
        JOIN cities c ON f.city_id = c.id
        WHERE f.id = $1 AND f.is_active = true`,
       [factoryId]
     );
-    
+
     if (factoryRes.rows.length === 0) {
       return { distributed: false, reason: 'Factory not found or inactive' };
     }
-    
+
     const factory = factoryRes.rows[0];
     const now = new Date();
     const lastPayout = factory.last_payout_time ? new Date(factory.last_payout_time) : factory.created_at;
-    
+
     // Check if enough time has passed (hourly distribution)
     if (now - new Date(lastPayout) < PAYOUT_INTERVAL) {
       return { distributed: false, reason: 'Payout interval not reached' };
     }
-    
+
     // Get the factory owner's referral chain
     const referralTree = await getUserReferralTree(factory.user_id);
-    
+
     const distributions = [];
-    
+
     // Group referred users by level
     for (const level of Object.keys(PROFIT_CONFIG).map(Number).sort((a, b) => a - b)) {
       const config = PROFIT_CONFIG[level];
       const usersAtLevel = referralTree.filter(r => r.level === level);
-      
+
       for (const user of usersAtLevel) {
         const profitAmount = config.profit_per_player / 24; // 1/24 of daily profit per hour
-        
+
         distributions.push({
           user_id: user.user_id,
           amount: profitAmount,
@@ -101,28 +101,28 @@ export async function distributeProfitFromFactory(factoryId) {
         });
       }
     }
-    
+
     // Insert all profit distributions
     for (const dist of distributions) {
-      await client.query(
+      await query(
         `INSERT INTO profit_history (user_id, source_user_id, amount, level, factory_id, payout_time)
          VALUES ($1, $2, $3, $4, $5, $6)`,
         [dist.user_id, dist.source_user_id, dist.amount, dist.level, dist.factory_id, now]
       );
-      
-      // Update user balance
-      await client.query(
-        `UPDATE users SET balance = balance + $1 WHERE telegram_id = $2`,
+
+      // Update city balance
+      await query(
+        `UPDATE cities SET balance = balance + $1 WHERE user_id = $2`,
         [dist.amount, dist.user_id]
       );
     }
-    
+
     // Update factory last payout time
-    await client.query(
+    await query(
       `UPDATE factories SET last_payout_time = $1 WHERE id = $2`,
       [now, factoryId]
     );
-    
+
     return {
       distributed: true,
       factory_id: factoryId,
@@ -149,29 +149,31 @@ export function calculateCityLevel(referralCount) {
 /**
  * Get profit summary for a user
  */
-export async function getUserProfitSummary(userId) {
+export async function getUserProfitSummary(telegramId) {
   try {
+    const numTelegramId = Number(telegramId);
+
     const hourlyRes = await query(
       `SELECT COALESCE(SUM(amount), 0) as total
        FROM profit_history
        WHERE user_id = $1 AND payout_time > NOW() - INTERVAL '1 hour'`,
-      [userId]
+      [numTelegramId]
     );
-    
+
     const dailyRes = await query(
       `SELECT COALESCE(SUM(amount), 0) as total
        FROM profit_history
        WHERE user_id = $1 AND payout_time > NOW() - INTERVAL '1 day'`,
-      [userId]
+      [numTelegramId]
     );
-    
+
     const weeklyRes = await query(
       `SELECT COALESCE(SUM(amount), 0) as total
        FROM profit_history
        WHERE user_id = $1 AND payout_time > NOW() - INTERVAL '7 days'`,
-      [userId]
+      [numTelegramId]
     );
-    
+
     return {
       hourly: parseFloat(hourlyRes.rows[0].total),
       daily: parseFloat(dailyRes.rows[0].total),

@@ -43,11 +43,13 @@ export async function createCity(userId, username) {
 /**
  * Get city data with all related information
  */
-export async function getCityData(userId) {
+export async function getCityData(telegramId) {
   try {
+    const numTelegramId = Number(telegramId);
+
     const cityRes = await query(
       `SELECT * FROM cities WHERE user_id = $1`,
-      [userId]
+      [numTelegramId]
     );
     
     if (cityRes.rows.length === 0) return null;
@@ -69,7 +71,7 @@ export async function getCityData(userId) {
     // Get referral count
     const referralsRes = await query(
       `SELECT COUNT(*) as count FROM referrals WHERE referrer_user_id = $1`,
-      [userId]
+      [numTelegramId]
     );
     
     const referralCount = parseInt(referralsRes.rows[0].count);
@@ -90,12 +92,14 @@ export async function getCityData(userId) {
 /**
  * Activate factory for 24 hours
  */
-export async function activateFactory(cityId, userId) {
+export async function activateFactory(cityId, telegramId) {
   try {
+    const numTelegramId = Number(telegramId);
+
     // Check if user has enough balance
     const balanceRes = await query(
       `SELECT balance FROM cities WHERE user_id = $1`,
-      [userId]
+      [numTelegramId]
     );
     
     if (balanceRes.rows.length === 0) {
@@ -124,21 +128,21 @@ export async function activateFactory(cityId, userId) {
     try {
       await query(
         `UPDATE cities SET balance = balance - 10 WHERE user_id = $1`,
-        [userId]
+        [numTelegramId]
       );
-      
+
       await query(
-        `UPDATE factories 
+        `UPDATE factories
          SET is_active = true, activated_at = $1, expires_at = $2, last_payout_time = $3
          WHERE city_id = $4`,
         [now, expiresAt, now, cityId]
       );
-      
+
       // Record transaction
       await query(
         `INSERT INTO transactions (user_id, type, amount, description)
          VALUES ($1, 'factory_activation', 10, 'Factory activation for 24 hours')`,
-        [userId]
+        [numTelegramId]
       );
       
       await query(`COMMIT`);

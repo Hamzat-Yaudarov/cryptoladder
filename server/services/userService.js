@@ -50,35 +50,38 @@ export async function getOrCreateUser(telegramData) {
 /**
  * Get user profile with city data
  */
-export async function getUserProfile(userId) {
+export async function getUserProfile(telegramId) {
   try {
+    // Convert to number if string
+    const numTelegramId = Number(telegramId);
+
     const userRes = await query(
       `SELECT * FROM users WHERE telegram_id = $1`,
-      [userId]
+      [numTelegramId]
     );
-    
+
     if (userRes.rows.length === 0) {
       return null;
     }
-    
+
     const user = userRes.rows[0];
-    
-    // Get city data
+
+    // Get city data using telegram_id
     const cityRes = await query(
       `SELECT * FROM cities WHERE user_id = $1`,
-      [userId]
+      [numTelegramId]
     );
-    
+
     // Get referral count
     const refCountRes = await query(
       `SELECT COUNT(*) as count FROM referrals WHERE referrer_user_id = $1`,
-      [userId]
+      [numTelegramId]
     );
-    
+
     // Get balance
     const balanceRes = await query(
       `SELECT COALESCE(SUM(amount), 0) as total FROM profit_history WHERE user_id = $1`,
-      [userId]
+      [numTelegramId]
     );
     
     return {
@@ -96,22 +99,24 @@ export async function getUserProfile(userId) {
 /**
  * Update user balance (add stars)
  */
-export async function addUserBalance(userId, amount, description = 'Balance addition') {
+export async function addUserBalance(telegramId, amount, description = 'Balance addition') {
   try {
+    const numTelegramId = Number(telegramId);
+
     const result = await query(
       `UPDATE cities SET balance = balance + $1 WHERE user_id = $2 RETURNING balance`,
-      [amount, userId]
+      [amount, numTelegramId]
     );
-    
+
     if (result.rows.length === 0) {
       throw new Error('User not found');
     }
-    
+
     // Record transaction
     await query(
       `INSERT INTO transactions (user_id, type, amount, description)
        VALUES ($1, 'addition', $2, $3)`,
-      [userId, amount, description]
+      [numTelegramId, amount, description]
     );
     
     return {
@@ -127,19 +132,21 @@ export async function addUserBalance(userId, amount, description = 'Balance addi
 /**
  * Get user transaction history
  */
-export async function getUserTransactions(userId, limit = 50, offset = 0) {
+export async function getUserTransactions(telegramId, limit = 50, offset = 0) {
   try {
+    const numTelegramId = Number(telegramId);
+
     const result = await query(
       `SELECT * FROM transactions
        WHERE user_id = $1
        ORDER BY created_at DESC
        LIMIT $2 OFFSET $3`,
-      [userId, limit, offset]
+      [numTelegramId, limit, offset]
     );
-    
+
     const countRes = await query(
       `SELECT COUNT(*) as total FROM transactions WHERE user_id = $1`,
-      [userId]
+      [numTelegramId]
     );
     
     return {
@@ -155,14 +162,16 @@ export async function getUserTransactions(userId, limit = 50, offset = 0) {
 /**
  * Get user statistics
  */
-export async function getUserStats(userId) {
+export async function getUserStats(telegramId) {
   try {
+    const numTelegramId = Number(telegramId);
+
     // Total profit
     const profitRes = await query(
       `SELECT COALESCE(SUM(amount), 0) as total FROM profit_history WHERE user_id = $1`,
-      [userId]
+      [numTelegramId]
     );
-    
+
     // Daily average
     const dailyRes = await query(
       `SELECT COALESCE(AVG(daily_profit), 0) as avg_daily FROM (
@@ -171,23 +180,23 @@ export async function getUserStats(userId) {
         WHERE user_id = $1 AND payout_time > NOW() - INTERVAL '30 days'
         GROUP BY day
       ) daily_stats`,
-      [userId]
+      [numTelegramId]
     );
-    
+
     // Active referrals
     const activeRefRes = await query(
       `SELECT COUNT(*) as count FROM referrals
        WHERE referrer_user_id = $1`,
-      [userId]
+      [numTelegramId]
     );
-    
+
     // Factory status
     const factoryRes = await query(
       `SELECT f.is_active, f.expires_at FROM factories f
        JOIN cities c ON f.city_id = c.id
        WHERE c.user_id = $1
        LIMIT 1`,
-      [userId]
+      [numTelegramId]
     );
     
     return {

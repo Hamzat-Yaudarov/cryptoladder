@@ -86,10 +86,12 @@ export async function joinCityViaReferral(newUserId, referralCode) {
 /**
  * Get all referrals for a user
  */
-export async function getUserReferrals(userId) {
+export async function getUserReferrals(telegramId) {
   try {
+    const numTelegramId = Number(telegramId);
+
     const result = await query(
-      `SELECT 
+      `SELECT
         r.id,
         r.referred_user_id,
         u.first_name,
@@ -104,7 +106,7 @@ export async function getUserReferrals(userId) {
        LEFT JOIN cities c ON u.telegram_id = c.user_id
        WHERE r.referrer_user_id = $1
        ORDER BY r.created_at DESC`,
-      [userId]
+      [numTelegramId]
     );
     
     return result.rows;
@@ -117,8 +119,10 @@ export async function getUserReferrals(userId) {
 /**
  * Claim bonus for a referral's first factory activation
  */
-export async function claimReferralBonus(referralId, userId) {
+export async function claimReferralBonus(referralId, telegramId) {
   try {
+    const numTelegramId = Number(telegramId);
+
     // Verify this bonus belongs to the user
     const refRes = await query(
       `SELECT r.*, c.user_id as city_owner
@@ -127,14 +131,14 @@ export async function claimReferralBonus(referralId, userId) {
        WHERE r.id = $1`,
       [referralId]
     );
-    
+
     if (refRes.rows.length === 0) {
       throw new Error('Referral not found');
     }
-    
+
     const referral = refRes.rows[0];
-    
-    if (referral.city_owner !== userId) {
+
+    if (referral.city_owner !== numTelegramId) {
       throw new Error('Unauthorized');
     }
     
@@ -158,14 +162,14 @@ export async function claimReferralBonus(referralId, userId) {
       
       await query(
         `UPDATE cities SET balance = balance + $1 WHERE user_id = $2`,
-        [REFERRAL_BONUS, userId]
+        [REFERRAL_BONUS, numTelegramId]
       );
-      
+
       // Record transaction
       await query(
         `INSERT INTO transactions (user_id, type, amount, description)
          VALUES ($1, 'referral_bonus', $2, 'Bonus for referral activation')`,
-        [userId, REFERRAL_BONUS]
+        [numTelegramId, REFERRAL_BONUS]
       );
       
       await query(`COMMIT`);
