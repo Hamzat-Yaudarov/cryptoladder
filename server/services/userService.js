@@ -1,6 +1,5 @@
 import { query } from '../db.js';
 import { createCity } from './cityService.js';
-import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Get or create a user from Telegram data
@@ -49,13 +48,12 @@ export async function getOrCreateUser(telegramData) {
       };
     }
     
-    // Create new user
-    const userId = uuidv4();
+    // Create new user (id is BIGINT, don't need to provide it)
     const newUserRes = await query(
-      `INSERT INTO users (id, telegram_id, username, first_name, last_name)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO users (telegram_id, username, first_name, last_name)
+       VALUES ($1, $2, $3, $4)
        RETURNING *`,
-      [userId, telegramId, username, first_name, last_name]
+      [telegramId, username, first_name, last_name]
     );
     
     const newUser = newUserRes.rows[0];
