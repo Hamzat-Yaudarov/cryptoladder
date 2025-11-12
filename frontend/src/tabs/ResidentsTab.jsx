@@ -31,8 +31,8 @@ export default function ResidentsTab({ userData, telegramId }) {
     }
   };
 
-  const referralLink = userData ? 
-    `https://t.me/cryptoladderbot/miniapp?startApp=1&ref=${userData.telegram_id}` : '';
+  const referralLink = userData ?
+    `https://t.me/cryptoladderbot?start=${userData.telegram_id}` : '';
 
   const copyReferralLink = () => {
     navigator.clipboard.writeText(referralLink);

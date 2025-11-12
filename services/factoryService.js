@@ -27,28 +27,42 @@ export async function activateFactory(telegramId) {
   if (!user.is_city_active) {
     throw new Error('City is not active');
   }
-  
+
   if (user.balance < DAILY_FACTORY_COST) {
     throw new Error('Insufficient balance');
   }
-  
+
+  // Check city allowed factory count
+  const cityRes = await query('SELECT factory_count FROM cities WHERE user_id = $1', [telegramId]);
+  const allowed = cityRes.rows[0]?.factory_count || 0;
+
+  const activeCountRes = await query(
+    `SELECT COUNT(*) as count FROM factories WHERE owner_id = $1 AND is_active = true AND expires_at > NOW()`,
+    [telegramId]
+  );
+  const activeCount = parseInt(activeCountRes.rows[0].count, 10) || 0;
+
+  if (activeCount >= allowed) {
+    throw new Error('Max active factories reached');
+  }
+
   // Deduct cost from balance
   await query(
     'UPDATE users SET balance = balance - $1 WHERE telegram_id = $2',
     [DAILY_FACTORY_COST, telegramId]
   );
-  
+
   // Create factory record (24-hour activation)
   const now = new Date();
   const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-  
+
   const result = await query(
     `INSERT INTO factories (owner_id, activated_at, expires_at, is_active)
      VALUES ($1, $2, $3, true)
      RETURNING *`,
     [telegramId, now, expiresAt]
   );
-  
+
   return result.rows[0];
 }
 

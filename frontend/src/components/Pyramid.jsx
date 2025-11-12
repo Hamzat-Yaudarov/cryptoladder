@@ -1,44 +1,63 @@
-import React, { useState } from 'react';
+import React from 'react';
 import '../styles/Pyramid.css';
 
-function Node({ node }) {
-  const [expanded, setExpanded] = useState(true);
-  const hasChildren = node.children && node.children.length > 0;
-
+function PersonCard({ node }) {
   return (
-    <li className="pyramid-node">
-      <div className="node-card" onClick={() => setExpanded(v => !v)}>
-        <div className="node-avatar">👤</div>
-        <div className="node-info">
-          <div className="node-name">{node.first_name || node.username || `user${node.id}`}</div>
-          {node.username && <div className="node-username">@{node.username}</div>}
-        </div>
-        {hasChildren && (
-          <div className={`node-toggle ${expanded ? 'open' : ''}`}>{expanded ? '▾' : '▸'}</div>
-        )}
-      </div>
-
-      {hasChildren && expanded && (
-        <ul className="node-children">
-          {node.children.map((child) => (
-            <Node key={child.id} node={child} />
-          ))}
-        </ul>
-      )}
-    </li>
+    <div className="person-card">
+      <div className="person-avatar">👤</div>
+      <div className="person-name">{node.first_name || node.username || `user${node.id}`}</div>
+      {node.username && <div className="person-username">@{node.username}</div>}
+    </div>
   );
 }
 
-export default function Pyramid({ roots }) {
-  if (!roots || roots.length === 0) return <div className="pyramid-empty">Пирамидa пуста</div>;
+// Build levels up to maxDepth (breadth-first)
+function buildLevels(root, maxDepth = 5) {
+  if (!root) return [];
+  const levels = [];
+  let current = [root];
+  let depth = 0;
+  while (current.length > 0 && depth < maxDepth) {
+    levels.push(current);
+    const next = [];
+    for (const node of current) {
+      if (node.children && node.children.length > 0) {
+        next.push(...node.children);
+      }
+    }
+    current = next;
+    depth++;
+  }
+  return levels;
+}
+
+export default function Pyramid({ roots, maxDepth = 5 }) {
+  const root = roots && roots[0];
+  if (!root) return <div className="pyramid-empty">Пирамида пуста</div>;
+
+  const levels = buildLevels(root, maxDepth);
+  const maxColumns = Math.max(...levels.map(l => l.length));
 
   return (
-    <div className="pyramid-container">
-      <ul className="pyramid-root-list">
-        {roots.map((root) => (
-          <Node key={root.id} node={root} />
-        ))}
-      </ul>
+    <div className="pyramid-visual">
+      <div className="level-row level-root">
+        <div className="level-cell level-center">
+          <PersonCard node={root} />
+        </div>
+      </div>
+
+      {levels.slice(1).map((lvl, idx) => (
+        <div key={idx} className="level-row" style={{ gridTemplateColumns: `repeat(${maxColumns}, 1fr)` }}>
+          {Array.from({ length: maxColumns }).map((_, col) => {
+            const node = lvl[col];
+            return (
+              <div key={col} className="level-cell">
+                {node ? <PersonCard node={node} /> : <div className="empty-cell" />}
+              </div>
+            );
+          })}
+        </div>
+      ))}
     </div>
   );
 }
