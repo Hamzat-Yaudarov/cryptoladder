@@ -1,0 +1,401 @@
+.construction-tab {
+  padding: 16px;
+  animation: slideInUp 0.3s ease;
+}
+
+.construction-header {
+  margin-bottom: 24px;
+  text-align: center;
+  padding-top: 12px;
+}
+
+.construction-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #ffffff;
+  background: linear-gradient(135deg, #00d4ff, #b800e6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 4px;
+}
+
+.construction-subtitle {
+  font-size: 14px;
+  color: #808080;
+}
+
+/* City Status */
+.city-status {
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 12px;
+  padding: 0;
+}
+
+.status-card {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(184, 0, 230, 0.05));
+  border: 1px solid #2a2a4a;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.status-info {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.status-level,
+.status-houses,
+.status-depth {
+  background: rgba(15, 52, 96, 0.5);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+  font-weight: 600;
+  color: #00d4ff;
+  font-size: 18px;
+}
+
+.status-progress {
+  margin-top: 12px;
+}
+
+.progress-label {
+  font-size: 12px;
+  color: #b0b0b0;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00ff88, #00d4ff);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+  box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+
+.progress-text {
+  font-size: 12px;
+  color: #b0b0b0;
+}
+
+/* Upgrade Plans */
+.upgrade-plans {
+  margin-bottom: 24px;
+}
+
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.upgrade-card {
+  background: rgba(15, 52, 96, 0.5);
+  border: 2px solid #2a2a4a;
+  border-radius: 12px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+
+  &.available {
+    border-color: #00d4ff;
+    background: rgba(15, 52, 96, 0.7);
+
+    &:hover {
+      border-color: #00ff88;
+      box-shadow: 0 4px 12px rgba(0, 212, 255, 0.2);
+      transform: translateY(-2px);
+    }
+  }
+
+  &.locked {
+    opacity: 0.6;
+    cursor: not-allowed;
+    border-color: #ff9800;
+  }
+
+  &.completed {
+    border-color: #00ff88;
+    background: rgba(0, 255, 136, 0.05);
+  }
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.plan-level {
+  font-size: 14px;
+  font-weight: 600;
+  color: #00d4ff;
+}
+
+.plan-status {
+  font-size: 16px;
+
+  &.locked {
+    color: #ff9800;
+  }
+
+  &.available {
+    color: #00d4ff;
+  }
+
+  &.completed {
+    color: #00ff88;
+  }
+}
+
+.card-specs {
+  margin-bottom: 8px;
+}
+
+.spec {
+  font-size: 12px;
+  color: #b0b0b0;
+  margin-bottom: 2px;
+}
+
+.card-requirement {
+  margin-bottom: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 8px;
+}
+
+.requirement-label {
+  font-size: 11px;
+  color: #808080;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.requirement-text {
+  font-size: 12px;
+  color: #00d4ff;
+  font-weight: 500;
+}
+
+.upgrade-btn {
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #00d4ff, #b800e6);
+  color: #1a1a2e;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: auto;
+
+  &.available:not(:disabled) {
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 212, 255, 0.3);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  &.locked {
+    background: #555;
+    color: #999;
+    cursor: not-allowed;
+  }
+
+  &.completed {
+    background: #00ff88;
+    color: #1a1a2e;
+    cursor: default;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+  }
+}
+
+/* Referral Info */
+.referral-info {
+  margin-bottom: 24px;
+}
+
+.info-card {
+  background: rgba(15, 52, 96, 0.5);
+  border: 1px solid #2a2a4a;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.info-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #00d4ff;
+  margin-bottom: 8px;
+}
+
+.info-list,
+.earnings-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.info-list li,
+.earnings-list li {
+  font-size: 12px;
+  color: #b0b0b0;
+  margin-bottom: 6px;
+  padding-left: 16px;
+  position: relative;
+  line-height: 1.5;
+
+  &:before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: #00d4ff;
+  }
+}
+
+.earnings-list li {
+  margin-bottom: 8px;
+
+  strong {
+    color: #00ff88;
+  }
+}
+
+/* Rankings Info */
+.rankings-info {
+  background: rgba(184, 0, 230, 0.05);
+  border: 1px solid rgba(184, 0, 230, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.rankings-description {
+  font-size: 13px;
+  color: #b0b0b0;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.rankings-list {
+  display: grid;
+  gap: 8px;
+}
+
+.ranking-item {
+  background: rgba(15, 52, 96, 0.5);
+  border: 1px solid rgba(184, 0, 230, 0.3);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ranking-position {
+  font-size: 13px;
+  font-weight: 600;
+  color: #b800e6;
+}
+
+.ranking-reward {
+  font-size: 13px;
+  font-weight: 600;
+  color: #00ff88;
+}
+
+/* Tips */
+.tips-section {
+  background: rgba(0, 255, 136, 0.05);
+  border: 1px solid rgba(0, 255, 136, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.tips-list {
+  display: grid;
+  gap: 10px;
+}
+
+.tip {
+  font-size: 12px;
+  color: #b0b0b0;
+  padding: 8px;
+  background: rgba(0, 255, 136, 0.05);
+  border-radius: 6px;
+  line-height: 1.5;
+
+  &:before {
+    color: #00ff88;
+  }
+}
+
+/* Animations */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .construction-tab {
+    padding: 12px;
+  }
+
+  .construction-title {
+    font-size: 24px;
+  }
+
+  .status-info {
+    grid-template-columns: 1fr;
+  }
+
+  .plans-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .status-level,
+  .status-houses,
+  .status-depth {
+    font-size: 16px;
+  }
+}

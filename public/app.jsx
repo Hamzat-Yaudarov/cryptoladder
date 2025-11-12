@@ -1,39 +1,53 @@
-import React, { useState, useEffect } from 'react';
-import CityTab from './tabs/CityTab';
-import ResidentsTab from './tabs/ResidentsTab';
-import IncomeTab from './tabs/IncomeTab';
-import BuildingTab from './tabs/BuildingTab';
-import ProfileTab from './tabs/ProfileTab';
+import React, { useEffect, useState, useCallback } from 'react';
+import { createRoot } from 'react-dom/client';
+import CityTab from './components/tabs/CityTab';
+import ResidentsTab from './components/tabs/ResidentsTab';
+import IncomeTab from './components/tabs/IncomeTab';
+import ConstructionTab from './components/tabs/ConstructionTab';
+import ProfileTab from './components/tabs/ProfileTab';
 import './styles/app.css';
 
-const App = () => {
+function App() {
   const [activeTab, setActiveTab] = useState('city');
   const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Initialize Telegram WebApp
   useEffect(() => {
-    // Initialize Telegram WebApp
-    if (window.Telegram?.WebApp) {
+    if (typeof window.Telegram !== 'undefined' && window.Telegram.WebApp) {
       window.Telegram.WebApp.ready();
       window.Telegram.WebApp.expand();
+      window.Telegram.WebApp.setHeaderColor('#1a1a2e');
+      window.Telegram.WebApp.setBackgroundColor('#0f0f1e');
     }
-
-    fetchUser();
   }, []);
 
-  const fetchUser = async () => {
+  // Fetch user data
+  const fetchUserData = useCallback(async () => {
     try {
-      const initData = window.Telegram?.WebApp?.initData || '';
-      const response = await fetch('/api/user/me', {
-        headers: {
-          Authorization: `Bearer ${initData}`,
-        },
+      setLoading(true);
+      
+      // Get Telegram user data
+      const telegramUser = window.Telegram?.WebApp?.initData?.user;
+      
+      if (!telegramUser) {
+        throw new Error('Unable to get Telegram user data');
+      }
+
+      // Auth with backend
+      const response = await fetch('/api/auth/user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ telegram_user: telegramUser }),
       });
 
-      if (!response.ok) throw new Error('Failed to fetch user');
-      const userData = await response.json();
-      setUser(userData);
+      if (!response.ok) throw new Error('Auth failed');
+
+      const data = await response.json();
+      setUser(data.user);
+      setProfile(data.profile);
       setError(null);
     } catch (err) {
       console.error('Error fetching user:', err);
@@ -41,76 +55,102 @@ const App = () => {
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  useEffect(() => {
+    fetchUserData();
+  }, [fetchUserData]);
+
+  const renderTab = () => {
+    if (!user || !profile) return null;
+
+    switch (activeTab) {
+      case 'city':
+        return <CityTab user={user} profile={profile} onRefresh={fetchUserData} />;
+      case 'residents':
+        return <ResidentsTab user={user} profile={profile} />;
+      case 'income':
+        return <IncomeTab user={user} profile={profile} />;
+      case 'construction':
+        return <ConstructionTab user={user} profile={profile} onRefresh={fetchUserData} />;
+      case 'profile':
+        return <ProfileTab user={user} profile={profile} />;
+      default:
+        return null;
+    }
   };
 
   if (loading) {
-    return <div className="app-loading">⏳ Загрузка...</div>;
+    return (
+      <div className="app-container">
+        <div className="loading">
+          <div className="spinner"></div>
+          <p>Loading CityLadder...</p>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="app-error">❌ Ошибка: {error}</div>;
+    return (
+      <div className="app-container">
+        <div className="error-message">
+          <p>❌ {error}</p>
+          <button onClick={fetchUserData}>Retry</button>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="app-container">
       <div className="app-content">
-        {activeTab === 'city' && <CityTab user={user} onRefresh={fetchUser} />}
-        {activeTab === 'residents' && <ResidentsTab user={user} />}
-        {activeTab === 'income' && <IncomeTab user={user} />}
-        {activeTab === 'building' && <BuildingTab user={user} onRefresh={fetchUser} />}
-        {activeTab === 'profile' && <ProfileTab user={user} />}
+        {renderTab()}
       </div>
 
-      <div className="app-navigation">
-        <NavButton
-          tab="city"
-          icon="🏙"
-          label="Город"
-          active={activeTab === 'city'}
+      <div className="app-tabs">
+        <button
+          className={`tab-button ${activeTab === 'city' ? 'active' : ''}`}
           onClick={() => setActiveTab('city')}
-        />
-        <NavButton
-          tab="residents"
-          icon="👥"
-          label="Жители"
-          active={activeTab === 'residents'}
+          title="City"
+        >
+          🏙
+        </button>
+        <button
+          className={`tab-button ${activeTab === 'residents' ? 'active' : ''}`}
           onClick={() => setActiveTab('residents')}
-        />
-        <NavButton
-          tab="income"
-          icon="💸"
-          label="Доход"
-          active={activeTab === 'income'}
+          title="Residents"
+        >
+          👥
+        </button>
+        <button
+          className={`tab-button ${activeTab === 'income' ? 'active' : ''}`}
           onClick={() => setActiveTab('income')}
-        />
-        <NavButton
-          tab="building"
-          icon="🏗"
-          label="Строк."
-          active={activeTab === 'building'}
-          onClick={() => setActiveTab('building')}
-        />
-        <NavButton
-          tab="profile"
-          icon="⚙"
-          label="Профиль"
-          active={activeTab === 'profile'}
+          title="Income"
+        >
+          💰
+        </button>
+        <button
+          className={`tab-button ${activeTab === 'construction' ? 'active' : ''}`}
+          onClick={() => setActiveTab('construction')}
+          title="Construction"
+        >
+          🏗
+        </button>
+        <button
+          className={`tab-button ${activeTab === 'profile' ? 'active' : ''}`}
           onClick={() => setActiveTab('profile')}
-        />
+          title="Profile"
+        >
+          ⚙️
+        </button>
       </div>
     </div>
   );
-};
+}
 
-const NavButton = ({ tab, icon, label, active, onClick }) => (
-  <button
-    className={`nav-button ${active ? 'active' : ''}`}
-    onClick={onClick}
-    title={label}
-  >
-    <span className="nav-icon">{icon}</span>
-    <span className="nav-label">{label}</span>
-  </button>
-);
+// Mount React app
+const root = createRoot(document.getElementById('root'));
+root.render(<App />);
 
 export default App;

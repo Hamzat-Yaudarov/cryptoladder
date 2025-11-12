@@ -1,0 +1,299 @@
+.residents-tab {
+  padding: 16px;
+  animation: slideInUp 0.3s ease;
+}
+
+.residents-header {
+  margin-bottom: 24px;
+  text-align: center;
+  padding-top: 12px;
+}
+
+.residents-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 4px;
+  background: linear-gradient(135deg, #00d4ff, #b800e6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.residents-count {
+  font-size: 14px;
+  color: #808080;
+}
+
+/* Income Breakdown */
+.income-breakdown {
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 12px;
+  padding: 0;
+}
+
+.income-levels {
+  display: grid;
+  gap: 10px;
+}
+
+.income-level-card {
+  background: rgba(15, 52, 96, 0.5);
+  border: 1px solid #2a2a4a;
+  border-radius: 12px;
+  padding: 12px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba(15, 52, 96, 0.8);
+    border-color: #00d4ff;
+  }
+}
+
+.level-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.level-number {
+  font-size: 13px;
+  font-weight: 600;
+  color: #00d4ff;
+}
+
+.level-residents {
+  font-size: 12px;
+  color: #b0b0b0;
+}
+
+.level-income {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.income-per-player,
+.income-total {
+  font-size: 12px;
+  color: #00ff88;
+  font-weight: 600;
+}
+
+.income-total {
+  text-align: right;
+  color: #b800e6;
+}
+
+.level-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.level-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00d4ff, #b800e6);
+  border-radius: 2px;
+  width: 60%;
+}
+
+/* Residents List Section */
+.residents-list-section {
+  margin-bottom: 24px;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  color: #b0b0b0;
+  font-size: 14px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 24px;
+  color: #b0b0b0;
+}
+
+.empty-state p:first-child {
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+.empty-hint {
+  font-size: 12px;
+  color: #808080;
+}
+
+.residents-list {
+  display: grid;
+  gap: 12px;
+}
+
+.resident-card {
+  background: rgba(15, 52, 96, 0.5);
+  border: 1px solid #2a2a4a;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba(15, 52, 96, 0.8);
+    border-color: #00d4ff;
+    transform: translateX(2px);
+  }
+}
+
+.resident-avatar {
+  flex-shrink: 0;
+}
+
+.avatar-placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00d4ff, #b800e6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1a1a2e;
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.resident-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.resident-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.resident-level {
+  font-size: 11px;
+  color: #b0b0b0;
+  margin-bottom: 2px;
+}
+
+.resident-balance {
+  font-size: 12px;
+  color: #00ff88;
+  font-weight: 600;
+}
+
+.resident-status {
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.status-active {
+  font-size: 12px;
+  color: #00ff88;
+  font-weight: 600;
+}
+
+.status-inactive {
+  font-size: 12px;
+  color: #ff9800;
+  font-weight: 600;
+}
+
+/* Hierarchy Info */
+.hierarchy-info {
+  background: rgba(15, 52, 96, 0.3);
+  border: 1px solid #2a2a4a;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.hierarchy-description {
+  font-size: 13px;
+  color: #b0b0b0;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.hierarchy-levels {
+  display: grid;
+  gap: 8px;
+}
+
+.hierarchy-level {
+  background: rgba(0, 212, 255, 0.05);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  border-radius: 8px;
+  padding: 10px 12px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba(0, 212, 255, 0.1);
+    border-color: #00d4ff;
+  }
+}
+
+.level-cap {
+  font-size: 12px;
+  color: #00d4ff;
+  font-weight: 500;
+}
+
+/* Animations */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .residents-tab {
+    padding: 12px;
+  }
+
+  .residents-title {
+    font-size: 24px;
+  }
+
+  .resident-card {
+    padding: 10px;
+  }
+
+  .avatar-placeholder {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+
+  .resident-name {
+    font-size: 12px;
+  }
+}
