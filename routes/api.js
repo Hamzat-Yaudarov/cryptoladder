@@ -222,9 +222,9 @@ router.post('/rating/claim-reward', verifyUser, async (req, res) => {
 router.get('/profit-history', verifyUser, async (req, res) => {
   try {
     const result = await query(
-      `SELECT * FROM profit_history 
-       WHERE earner_id = $1 
-       ORDER BY created_at DESC 
+      `SELECT * FROM profit_history
+       WHERE earner_id = $1
+       ORDER BY created_at DESC
        LIMIT 50`,
       [req.telegramId]
     );
@@ -238,11 +238,70 @@ router.get('/profit-today', verifyUser, async (req, res) => {
   try {
     const result = await query(
       `SELECT COALESCE(SUM(amount), 0) as total_today
-       FROM profit_history 
+       FROM profit_history
        WHERE earner_id = $1 AND DATE(created_at) = CURRENT_DATE`,
       [req.telegramId]
     );
     res.json({ profit_today: parseFloat(result.rows[0].total_today) });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Structure endpoints
+// Returns full referral tree (roots where referrer_id IS NULL)
+router.get('/structure/global', async (req, res) => {
+  try {
+    const result = await query(
+      `SELECT telegram_id, username, first_name, last_name, referrer_id
+       FROM users`
+    );
+    const users = result.rows;
+    const map = new Map();
+    users.forEach(u => map.set(u.telegram_id.toString(), { id: u.telegram_id.toString(), username: u.username, first_name: u.first_name, last_name: u.last_name, children: [] }));
+
+    const roots = [];
+    users.forEach(u => {
+      const node = map.get(u.telegram_id.toString());
+      if (u.referrer_id) {
+        const parent = map.get(u.referrer_id.toString());
+        if (parent) parent.children.push(node);
+        else roots.push(node);
+      } else {
+        roots.push(node);
+      }
+    });
+
+    res.json({ roots });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Returns subtree for a specific user (user and all descendants)
+router.get('/structure/mine', verifyUser, async (req, res) => {
+  try {
+    const result = await query(
+      `SELECT telegram_id, username, first_name, last_name, referrer_id
+       FROM users`
+    );
+    const users = result.rows;
+    const map = new Map();
+    users.forEach(u => map.set(u.telegram_id.toString(), { id: u.telegram_id.toString(), username: u.username, first_name: u.first_name, last_name: u.last_name, children: [] }));
+
+    users.forEach(u => {
+      if (u.referrer_id) {
+        const parent = map.get(u.referrer_id.toString());
+        const node = map.get(u.telegram_id.toString());
+        if (parent) parent.children.push(node);
+      }
+    });
+
+    const root = map.get(req.telegramId.toString());
+    if (!root) return res.status(404).json({ error: 'User not found' });
+
+    // Build subtree by DFS from root (map already has children populated)
+    res.json({ root });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

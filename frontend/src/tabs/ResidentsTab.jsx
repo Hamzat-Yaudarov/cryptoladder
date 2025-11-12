@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Card from '../components/Card';
 import Button from '../components/Button';
 import '../styles/tabs/ResidentsTab.css';
+import Pyramid from '../components/Pyramid';
 
 export default function ResidentsTab({ userData, telegramId }) {
   const [residents, setResidents] = useState([]);
@@ -43,9 +44,68 @@ export default function ResidentsTab({ userData, telegramId }) {
     window.open(`https://t.me/share/url?url=${referralLink}&text=${text}`, '_blank');
   };
 
+  const [showGlobal, setShowGlobal] = React.useState(false);
+  const [showMine, setShowMine] = React.useState(false);
+  const [globalRoots, setGlobalRoots] = React.useState([]);
+  const [myRoot, setMyRoot] = React.useState(null);
+
+  const fetchGlobal = async () => {
+    try {
+      const res = await fetch('/api/structure/global');
+      const data = await res.json();
+      setGlobalRoots(data.roots || []);
+      setShowGlobal(true);
+      setShowMine(false);
+    } catch (err) {
+      console.error('Failed to fetch global structure', err);
+      alert('Ошибка при получении общей структуры');
+    }
+  };
+
+  const fetchMine = async () => {
+    try {
+      const res = await fetch(`/api/structure/mine`, { headers: { 'X-Telegram-ID': telegramId.toString() } });
+      const data = await res.json();
+      if (data.error) {
+        alert(`Ошибка: ${data.error}`);
+        return;
+      }
+      setMyRoot(data.root || null);
+      setShowMine(true);
+      setShowGlobal(false);
+    } catch (err) {
+      console.error('Failed to fetch my structure', err);
+      alert('Ошибка при получении вашей структуры');
+    }
+  };
+
   return (
     <div className="residents-tab">
       <h1 className="residents-title">👥 Мой город: {totalResidents} жителей</h1>
+
+      <div className="structure-actions">
+        <button className="structure-btn" onClick={fetchGlobal}>👥 Показать общую пирамиду</button>
+        <button className="structure-btn" onClick={fetchMine}>🔍 Показать мою пирамиду</button>
+        <button className="structure-btn" onClick={() => { setShowGlobal(false); setShowMine(false); }}>✖️ Скрыть</button>
+      </div>
+
+      {showGlobal && (
+        <Card className="structure-card">
+          <h3 className="structure-title">🌐 Общая пирамида</h3>
+          <div className="structure-view">
+            <Pyramid roots={globalRoots} />
+          </div>
+        </Card>
+      )}
+
+      {showMine && myRoot && (
+        <Card className="structure-card">
+          <h3 className="structure-title">🧭 Ваша пирамида</h3>
+          <div className="structure-view">
+            <Pyramid roots={[myRoot]} />
+          </div>
+        </Card>
+      )}
 
       {userData?.is_city_active && (
         <Card className="referral-card">
