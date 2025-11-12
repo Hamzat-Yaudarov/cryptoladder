@@ -16,11 +16,15 @@ const router = express.Router();
 
 // Middleware to verify telegram data (simplified)
 const verifyUser = (req, res, next) => {
-  const telegramId = req.body.telegram_id || req.query.telegram_id;
+  const telegramId = req.body.telegram_id || req.query.telegram_id || req.headers['x-telegram-id'];
   if (!telegramId) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
-  req.telegramId = BigInt(telegramId);
+  try {
+    req.telegramId = BigInt(telegramId);
+  } catch (error) {
+    return res.status(401).json({ error: 'Invalid Telegram ID format' });
+  }
   next();
 };
 
