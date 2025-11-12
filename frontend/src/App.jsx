@@ -6,6 +6,7 @@ import ResidentsTab from './tabs/ResidentsTab';
 import IncomeTab from './tabs/IncomeTab';
 import BuildTab from './tabs/BuildTab';
 import ProfileTab from './tabs/ProfileTab';
+import PyramidPage from './pages/PyramidPage';
 import Loading from './components/Loading';
 import './styles/App.css';
 
@@ -15,6 +16,7 @@ const TABS = [
   { id: 'income', label: '💸 Доход', icon: '📈' },
   { id: 'build', label: '🏗 Строительство', icon: '🔨' },
   { id: 'profile', label: '⚙️ Профиль', icon: '👤' },
+  { id: 'pyramid', label: '🔺 Пирамида', icon: '🔺' },
 ];
 
 export default function App() {
@@ -62,7 +64,12 @@ export default function App() {
 
   const renderTabContent = () => {
     const props = { userData, refreshUser, telegramId };
-    
+
+    const pathname = window.location.pathname;
+    if (pathname === '/pyramid' || activeTab === 'pyramid') {
+      return <PyramidPage {...props} />;
+    }
+
     switch (activeTab) {
       case 'city':
         return <CityTab {...props} />;
@@ -74,6 +81,8 @@ export default function App() {
         return <BuildTab {...props} />;
       case 'profile':
         return <ProfileTab {...props} />;
+      case 'pyramid':
+        return <PyramidPage {...props} />;
       default:
         return <CityTab {...props} />;
     }

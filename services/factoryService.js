@@ -74,61 +74,80 @@ export async function deactivateExpiredFactories() {
 }
 
 export async function distributeProfits(factoryOwnerId) {
-  // Get factory owner's residents by level
-  const residentsResult = await query(
-    `SELECT u.telegram_id, r.level
-     FROM residents r
-     JOIN users u ON r.resident_id = u.telegram_id
-     WHERE r.city_owner_id = $1 AND r.is_active = true
-     ORDER BY r.level ASC`,
+  // For each active factory owned by factoryOwnerId, distribute profits up the referrer chain
+  const factoriesRes = await query(
+    `SELECT id, owner_id, activated_at FROM factories
+     WHERE owner_id = $1 AND is_active = true AND expires_at > NOW()`,
     [factoryOwnerId]
   );
-  
-  const residents = residentsResult.rows;
-  
-  // Distribute profits by level
-  for (const resident of residents) {
-    const profitInfo = PROFIT_STRUCTURE[resident.level];
-    if (!profitInfo) continue;
-    
-    const profit = profitInfo.profit_per_player;
-    
-    // Add profit to resident
-    await query(
-      'UPDATE users SET balance = balance + $1 WHERE telegram_id = $2',
-      [profit, resident.telegram_id]
-    );
-    
-    // Record profit distribution
-    await query(
-      `INSERT INTO profit_history (earner_id, factory_owner_id, level, amount)
-       VALUES ($1, $2, $3, $4)`,
-      [resident.telegram_id, factoryOwnerId, resident.level, profit]
-    );
+
+  const factories = factoriesRes.rows;
+  let totalDistributed = 0;
+
+  for (const factory of factories) {
+    let current = factory.owner_id.toString();
+
+    // Walk up to 5 levels of referrers
+    for (let level = 1; level <= 5; level++) {
+      const refRes = await query(
+        'SELECT referrer_id FROM users WHERE telegram_id = $1',
+        [current]
+      );
+      const ref = refRes.rows[0]?.referrer_id;
+      if (!ref) break; // no more ancestors
+
+      const ancestorId = ref.toString();
+      const profitInfo = PROFIT_STRUCTURE[level];
+      if (!profitInfo) {
+        current = ancestorId;
+        continue;
+      }
+
+      const profit = profitInfo.profit_per_player;
+
+      // Add profit to ancestor
+      await query(
+        'UPDATE users SET balance = balance + $1, updated_at = CURRENT_TIMESTAMP WHERE telegram_id = $2',
+        [profit, ancestorId]
+      );
+
+      // Record profit distribution
+      await query(
+        `INSERT INTO profit_history (earner_id, factory_owner_id, level, amount)
+         VALUES ($1, $2, $3, $4)`,
+        [ancestorId, factoryOwnerId, level, profit]
+      );
+
+      totalDistributed++;
+
+      // Move up the chain
+      current = ancestorId;
+    }
   }
-  
-  return residents.length;
+
+  return totalDistributed;
 }
 
 export async function processProfitDistribution() {
   // Get all active factories
   const factoriesResult = await query(
-    `SELECT DISTINCT owner_id FROM factories 
+    `SELECT id, owner_id FROM factories
      WHERE is_active = true AND expires_at > NOW()`
   );
-  
+
   const factories = factoriesResult.rows;
   let totalProcessed = 0;
-  
+
   for (const factory of factories) {
     try {
+      // Distribute profits for this factory's owner (distributeProfits will handle all active factories for owner)
       const distributed = await distributeProfits(factory.owner_id);
       totalProcessed += distributed;
     } catch (error) {
       console.error(`Failed to distribute profits for factory owner ${factory.owner_id}:`, error);
     }
   }
-  
+
   return totalProcessed;
 }
 

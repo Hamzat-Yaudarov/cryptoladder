@@ -51,18 +51,59 @@ export async function updateBalance(telegramId, amount) {
   return result.rows[0]?.balance || 0;
 }
 
-export async function addReferral(telegramId, referrerId) {
-  const result = await query(
-    `UPDATE users SET 
-      total_referrals = total_referrals + 1,
-      referrer_id = $1,
-      updated_at = CURRENT_TIMESTAMP
-     WHERE telegram_id = $2
-     RETURNING total_referrals`,
-    [referrerId, telegramId]
+export async function addReferral(telegramId, referrerCandidateId) {
+  // Place the new user under the referrerCandidate using breadth-first search
+  // to find the first node with less than 3 direct children.
+  const candidate = referrerCandidateId ? referrerCandidateId.toString() : null;
+  if (!candidate) {
+    // No referrer provided
+    return null;
+  }
+
+  const queue = [candidate];
+  let actualReferrer = null;
+
+  while (queue.length > 0) {
+    const current = queue.shift();
+    // Count direct children
+    const countRes = await query(
+      'SELECT COUNT(*) as count FROM users WHERE referrer_id = $1',
+      [current]
+    );
+    const cnt = parseInt(countRes.rows[0].count, 10) || 0;
+    if (cnt < 3) {
+      actualReferrer = current;
+      break;
+    }
+
+    // Enqueue children
+    const childrenRes = await query(
+      'SELECT telegram_id FROM users WHERE referrer_id = $1 ORDER BY created_at ASC',
+      [current]
+    );
+    for (const r of childrenRes.rows) {
+      queue.push(r.telegram_id.toString());
+    }
+  }
+
+  if (!actualReferrer) {
+    // fallback to original candidate
+    actualReferrer = candidate;
+  }
+
+  // Update new user's referrer
+  await query(
+    'UPDATE users SET referrer_id = $1, updated_at = CURRENT_TIMESTAMP WHERE telegram_id = $2',
+    [actualReferrer, telegramId]
   );
-  
-  return result.rows[0];
+
+  // Increment total_referrals for the actual referrer
+  await query(
+    'UPDATE users SET total_referrals = total_referrals + 1, updated_at = CURRENT_TIMESTAMP WHERE telegram_id = $1',
+    [actualReferrer]
+  );
+
+  return actualReferrer;
 }
 
 export async function getReferralCount(telegramId) {

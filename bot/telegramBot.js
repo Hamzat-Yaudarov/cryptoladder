@@ -1,5 +1,5 @@
 import { Telegraf, Markup } from 'telegraf';
-import { createOrUpdateUser } from '../services/userService.js';
+import { createOrUpdateUser, getUser, addReferral } from '../services/userService.js';
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const WEBAPP_URL = process.env.WEBAPP_URL;
@@ -21,18 +21,26 @@ bot.use(async (ctx, next) => {
 });
 
 // Start command
-bot.start((ctx) => {
+bot.start(async (ctx) => {
   const referrerId = ctx.startPayload;
-  
-  const messageText = `🏙️ <b>Добро пожаловать в CityLadder!</b>
 
-Это экономическая игра на Telegram, где в��:
-✨ Строите собственный город
-👥 Приглашаете жителей и получаете прибыль
-🏭 Запускаете заводы и получаете звёзды ⭐️
-🎯 Соревнуетесь с другими игроками
+  try {
+    if (referrerId && ctx.from) {
+      const existing = await getUser(ctx.from.id);
+      if (existing && !existing.referrer_id) {
+        try {
+          await addReferral(ctx.from.id, referrerId);
+          console.log(`Assigned referrer ${referrerId} to user ${ctx.from.id}`);
+        } catch (err) {
+          console.warn('Failed to assign referrer:', err.message);
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Error handling referral on start:', err);
+  }
 
-<b>Начните прямо сейчас и начните зарабатывать!</b>`;
+  const messageText = `🏙️ <b>Добр�� пожаловать в CityLadder!</b>\n\n\nЭто экономическая игра на Telegram, где в��:\n✨ Строите собственный город\n👥 Приглашаете жителей и получаете прибыль\n🏭 Запускаете заводы и получаете звёзды ⭐️\n🎯 Соревнуетесь с другими игроками\n\n<b>Начните прямо сейчас и начните зарабатывать!</b>`;
 
   ctx.replyWithHTML(
     messageText,
