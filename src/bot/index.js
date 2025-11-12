@@ -48,7 +48,7 @@ bot.command('start', async (ctx) => {
     }
 
     // Build message
-    const miniappUrl = process.env.MINIAPP_URL;
+    const miniappUrl = process.env.MINIAPP_URL || 'https://t.me/cryptoladderbot/miniapp';
     const message = `
 🌆 Добро пожаловать в CityLadder!
 
@@ -63,7 +63,7 @@ bot.command('start', async (ctx) => {
           [
             {
               text: '🏙️ Открыть игру',
-              web_app: { url: miniappUrl },
+              url: miniappUrl,
             },
           ],
         ],
@@ -83,7 +83,7 @@ bot.command('help', async (ctx) => {
 🏙️ Игра:
 - Создайте свой город
 - Пригласите жителей (реферрефлов)
-- Запустите заводы для заработка
+- Запустите завод�� для заработка
 - Получайте звёзды ⭐️ от активности
 
 💰 Экономика:
