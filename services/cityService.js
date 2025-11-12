@@ -51,7 +51,7 @@ export async function getCity(telegramId) {
   return result.rows[0];
 }
 
-export async function upgradeCityLevel(telegramId) {
+export async function upgradeCity(telegramId) {
   const user = await query(
     'SELECT * FROM users WHERE telegram_id = $1',
     [telegramId]
