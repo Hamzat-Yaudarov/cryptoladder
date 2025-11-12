@@ -1,31 +1,51 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Card from '../components/Card';
 import '../styles/tabs/IncomeTab.css';
+import '../styles/Pyramid.css';
 
 export default function IncomeTab({ userData, telegramId }) {
   const [profitHistory, setProfitHistory] = useState([]);
   const [profitToday, setProfitToday] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [incomeStats, setIncomeStats] = useState(null);
+  const balanceRef = useRef(null);
+  const localBalance = useRef(userData?.balance || 0);
 
   useEffect(() => {
     fetchProfitData();
+    fetchIncomeStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [telegramId]);
+
+  useEffect(() => {
+    localBalance.current = userData?.balance || 0;
+  }, [userData?.balance]);
 
   const fetchProfitData = async () => {
     try {
       const params = new URLSearchParams({ telegram_id: telegramId.toString() });
-      
+
       const [historyData, todayData] = await Promise.all([
         fetch(`/api/profit-history?${params}`, { headers: { 'X-Telegram-ID': telegramId.toString() } }).then(r => r.json()),
         fetch(`/api/profit-today?${params}`, { headers: { 'X-Telegram-ID': telegramId.toString() } }).then(r => r.json()),
       ]);
-      
+
       setProfitHistory(historyData || []);
       setProfitToday(todayData.profit_today || 0);
     } catch (error) {
       console.error('Failed to fetch profit data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchIncomeStats = async () => {
+    try {
+      const res = await fetch('/api/stats/income', { headers: { 'X-Telegram-ID': telegramId.toString() } });
+      const data = await res.json();
+      setIncomeStats(data);
+    } catch (err) {
+      console.error('Failed to fetch income stats', err);
     }
   };
 
@@ -43,7 +63,7 @@ export default function IncomeTab({ userData, telegramId }) {
 
   const stats = calculateStats();
 
-  // Group profit by level
+  // Group profit by level from history (fallback)
   const profitByLevel = {};
   profitHistory.forEach(record => {
     const level = record.level;
@@ -52,6 +72,57 @@ export default function IncomeTab({ userData, telegramId }) {
     }
     profitByLevel[level] += parseFloat(record.amount);
   });
+
+  // Stars flow animation every N seconds
+  useEffect(() => {
+    if (!incomeStats || incomeStats.total_per_day <= 0) return;
+
+    const interval = 10; // seconds
+    const intervalMs = interval * 1000;
+    // amount to add per interval = total_per_day / (86400/interval)
+    const stepsPerDay = 86400 / interval;
+    const amountPerInterval = incomeStats.total_per_day / stepsPerDay;
+
+    const timer = setInterval(() => {
+      // animate star
+      animateStarToBalance();
+      // update local display balance
+      localBalance.current = parseFloat((localBalance.current + amountPerInterval).toFixed(4));
+      if (balanceRef.current) {
+        balanceRef.current.textContent = Math.floor(localBalance.current) + '⭐️';
+      }
+    }, intervalMs);
+
+    return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [incomeStats]);
+
+  const animateStarToBalance = () => {
+    const star = document.createElement('div');
+    star.className = 'floating-star';
+    star.textContent = '⭐️';
+    document.body.appendChild(star);
+
+    const start = {
+      x: window.innerWidth / 2,
+      y: window.innerHeight - 80
+    };
+
+    const targetEl = balanceRef.current;
+    const targetRect = targetEl ? targetEl.getBoundingClientRect() : { left: window.innerWidth - 80, top: 20 };
+
+    star.style.left = start.x + 'px';
+    star.style.top = start.y + 'px';
+
+    requestAnimationFrame(() => {
+      star.style.transform = `translate(${targetRect.left - start.x}px, ${targetRect.top - start.y}px) scale(0.6)`;
+      star.style.opacity = '0.0';
+    });
+
+    setTimeout(() => {
+      star.remove();
+    }, 1200);
+  };
 
   if (!userData?.is_city_active) {
     return (
@@ -73,48 +144,38 @@ export default function IncomeTab({ userData, telegramId }) {
       <Card className="income-summary-card">
         <div className="summary-header">
           <h3 className="summary-title">📊 Статистика доходов</h3>
-          <button className="refresh-btn" onClick={fetchProfitData}>🔄</button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button className="refresh-btn" onClick={() => { fetchProfitData(); fetchIncomeStats(); }}>🔄</button>
+            <div ref={balanceRef} className="current-balance">{Math.floor(userData.balance)}⭐️</div>
+          </div>
         </div>
 
         <div className="income-stats">
-          <div className="income-stat">
-            <span className="stat-label">Сегодня</span>
-            <span className="stat-value">{profitToday.toFixed(2)}⭐️</span>
-          </div>
-          <div className="income-stat">
-            <span className="stat-label">Всего</span>
-            <span className="stat-value">{stats.total}⭐️</span>
-          </div>
-          <div className="income-stat">
-            <span className="stat-label">Среднее</span>
-            <span className="stat-value">{stats.average}⭐️</span>
-          </div>
-          <div className="income-stat">
-            <span className="stat-label">Макс</span>
-            <span className="stat-value">{stats.highest}⭐️</span>
-          </div>
+          {incomeStats ? (
+            <>
+              <div className="income-digit">
+                <div className="digit-label">📊 Доход от игроков (в сутки)</div>
+                <div className="digit-value">{incomeStats.total_per_day}⭐️ / сутки</div>
+                <div className="digit-sub">≈ {incomeStats.per_hour.toFixed(3)}⭐️ / час</div>
+              </div>
+
+              <div className="levels-list">
+                {incomeStats.levels.map(l => (
+                  <div key={l.level} className="level-item">
+                    <div className="level-left">Уровень {l.level}</div>
+                    <div className="level-middle">{l.active_players} активных → {l.active_factories} зав.</div>
+                    <div className="level-right">{l.total_per_day}⭐️ / сутки</div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="total-line">Всего: <strong>+{incomeStats.total_per_day}⭐️ / сутки</strong></div>
+            </>
+          ) : (
+            <div>Загрузка аналитики...</div>
+          )}
         </div>
       </Card>
-
-      {Object.keys(profitByLevel).length > 0 && (
-        <Card className="profit-by-level-card">
-          <h3 className="level-title">📈 Доход по уровням</h3>
-          <div className="level-breakdown">
-            {Object.keys(profitByLevel).map((level) => (
-              <div key={level} className="level-row">
-                <span className="level-name">Уровень {level}</span>
-                <div className="level-bar">
-                  <div 
-                    className="level-bar-fill" 
-                    style={{ width: `${(profitByLevel[level] / parseFloat(stats.total)) * 100}%` }}
-                  ></div>
-                </div>
-                <span className="level-value">{profitByLevel[level].toFixed(2)}⭐️</span>
-              </div>
-            ))}
-          </div>
-        </Card>
-      )}
 
       {profitHistory.length > 0 ? (
         <Card className="history-card">
@@ -146,6 +207,25 @@ export default function IncomeTab({ userData, telegramId }) {
           </div>
         </Card>
       )}
+
+      <style>{`
+        .floating-star {
+          position: fixed;
+          left: 50%;
+          top: calc(100% - 120px);
+          font-size: 22px;
+          transition: transform 1.1s cubic-bezier(.2,.9,.2,1), opacity 1.1s;
+          z-index: 9999;
+        }
+
+        .current-balance {
+          font-weight: 700;
+          background: linear-gradient(90deg, #fff, #fff);
+          padding: 6px 10px;
+          border-radius: 8px;
+          border: 1px solid rgba(0,0,0,0.06);
+        }
+      `}</style>
     </div>
   );
 }

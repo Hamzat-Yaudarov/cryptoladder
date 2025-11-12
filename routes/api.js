@@ -12,6 +12,7 @@ import {
   createOrUpdateUser
 } from '../services/userService.js';
 import { query } from '../database/client.js';
+import { PROFIT_STRUCTURE_CONST } from '../services/factoryService.js';
 
 const router = express.Router();
 
@@ -244,6 +245,86 @@ router.get('/profit-today', verifyUser, async (req, res) => {
     );
     res.json({ profit_today: parseFloat(result.rows[0].total_today) });
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Income statistics endpoint
+router.get('/stats/income', verifyUser, async (req, res) => {
+  try {
+    // Find descendants up to 5 levels using recursive CTE
+    const descendantsRes = await query(
+      `WITH RECURSIVE desc AS (
+        SELECT telegram_id, referrer_id, 1 as level
+        FROM users
+        WHERE referrer_id = $1
+        UNION ALL
+        SELECT u.telegram_id, u.referrer_id, d.level + 1
+        FROM users u
+        JOIN desc d ON u.referrer_id = d.telegram_id
+        WHERE d.level < 5
+      )
+      SELECT telegram_id, level FROM desc`,
+      [req.telegramId]
+    );
+
+    const descendants = descendantsRes.rows; // array of {telegram_id, level}
+    if (descendants.length === 0) {
+      return res.json({ levels: [], total_per_day: 0, per_hour: 0 });
+    }
+
+    // Map owner -> level (distance from req.telegramId)
+    const ownerLevelMap = new Map();
+    descendants.forEach(d => ownerLevelMap.set(d.telegram_id.toString(), d.level));
+
+    // Get active factories for these owners
+    const owners = [...new Set(descendants.map(d => d.telegram_id))];
+    if (owners.length === 0) return res.json({ levels: [], total_per_day: 0, per_hour: 0 });
+
+    const factoriesRes = await query(
+      `SELECT owner_id, COUNT(*) as active_factories
+       FROM factories
+       WHERE owner_id = ANY($1::bigint[]) AND is_active = true AND expires_at > NOW()
+       GROUP BY owner_id`,
+      [owners]
+    );
+
+    // Aggregate per level
+    const levelAgg = {};
+    for (const row of factoriesRes.rows) {
+      const owner = row.owner_id.toString();
+      const cnt = parseInt(row.active_factories, 10) || 0;
+      const level = ownerLevelMap.get(owner);
+      if (!level) continue;
+      if (!levelAgg[level]) levelAgg[level] = { active_players: 0, active_factories: 0 };
+      levelAgg[level].active_players += 1; // count of players at this level who have active factories
+      levelAgg[level].active_factories += cnt; // total active factories belonging to that level
+    }
+
+    // Compute profits per level using PROFIT_STRUCTURE_CONST
+    const levels = [];
+    let total_per_day = 0;
+    for (let lvl = 1; lvl <= 5; lvl++) {
+      const profitInfo = PROFIT_STRUCTURE_CONST[lvl];
+      const factoriesCount = levelAgg[lvl]?.active_factories || 0;
+      const playersWithActive = levelAgg[lvl]?.active_players || 0;
+      const profit_per_player = profitInfo ? profitInfo.profit_per_player : 0;
+      const level_total = factoriesCount * profit_per_player; // each factory yields profit_per_player to this ancestor
+      total_per_day += level_total;
+      levels.push({
+        level: lvl,
+        active_players: playersWithActive,
+        active_factories: factoriesCount,
+        profit_per_player: profit_per_player,
+        total_per_day: parseFloat(level_total.toFixed(2))
+      });
+    }
+
+    const per_hour = parseFloat((total_per_day / 24).toFixed(4));
+
+    res.json({ levels, total_per_day: parseFloat(total_per_day.toFixed(2)), per_hour });
+  } catch (error) {
+    console.error('Stats income error:', error);
     res.status(500).json({ error: error.message });
   }
 });
