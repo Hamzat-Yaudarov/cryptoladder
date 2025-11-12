@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './Pyramid.css';
+import '../styles/Pyramid.css';
 
 function Node({ node }) {
   const [expanded, setExpanded] = useState(true);
