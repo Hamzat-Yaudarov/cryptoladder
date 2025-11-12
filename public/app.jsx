@@ -28,12 +28,12 @@ function App() {
   const fetchUserData = useCallback(async () => {
     try {
       setLoading(true);
-      
-      // Get Telegram user data
-      const telegramUser = window.Telegram?.WebApp?.initData?.user;
-      
-      if (!telegramUser) {
-        throw new Error('Unable to get Telegram user data');
+
+      // Get Telegram user data from initDataUnsafe (correct way)
+      const telegramUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+
+      if (!telegramUser || !telegramUser.id) {
+        throw new Error('Unable to get Telegram user data. Make sure you open this as a Telegram MiniApp.');
       }
 
       // Auth with backend

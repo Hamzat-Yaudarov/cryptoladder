@@ -573,11 +573,24 @@
     try {
       ui.renderLoading();
 
-      // Get Telegram user data
-      const telegramUser = window.Telegram?.WebApp?.initData?.user ||
-        window.Telegram?.WebApp?.initDataUnsafe?.user;
+      // Get Telegram user data (initDataUnsafe is the correct way)
+      let telegramUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
 
-      if (!telegramUser) {
+      // Fallback: try to parse initData if it's a string
+      if (!telegramUser && window.Telegram?.WebApp?.initData) {
+        try {
+          const initDataStr = window.Telegram.WebApp.initData;
+          const params = new URLSearchParams(initDataStr);
+          const userJson = params.get('user');
+          if (userJson) {
+            telegramUser = JSON.parse(userJson);
+          }
+        } catch (e) {
+          console.error('Failed to parse initData:', e);
+        }
+      }
+
+      if (!telegramUser || !telegramUser.id) {
         throw new Error('Unable to get Telegram user data. Make sure you open this as a Telegram MiniApp.');
       }
 
