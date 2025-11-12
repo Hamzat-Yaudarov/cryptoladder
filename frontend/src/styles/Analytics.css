@@ -1,0 +1,19 @@
+.analytics-tab { padding: 12px; }
+.analytics-grid { display: grid; grid-template-columns: 1fr 320px; gap: 12px; }
+.level-list { display: flex; flex-direction: column; gap: 8px; }
+.level-row { display: flex; justify-content: space-between; padding: 8px; background: #fff; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.04); }
+.level-label { font-weight: 700; }
+.level-count { color: #555; }
+.level-profit { font-weight: 700; color: #8b5cf6; }
+.analytics-total { margin-top: 12px; padding: 10px; background: linear-gradient(90deg,#fbf8ff,#fff); border-radius: 8px; text-align: center; }
+.total-value { font-size: 20px; font-weight: 800; color: #111827; }
+.total-note { font-size: 12px; color: #666; }
+.balance-card-analytics { padding: 12px; }
+.balance-display { text-align: center; padding: 18px 0; }
+.balance-value { font-size: 28px; font-weight: 900; color: #111827; }
+.balance-sub { font-size: 12px; color: #666; }
+.analytics-actions { display: flex; gap: 8px; justify-content: center; margin-top: 10px; }
+.star-animation-area { position: relative; height: 60px; overflow: visible; }
+.flowing-star { position: absolute; left: 50%; transform: translateX(-50%); top: 0; animation: flowToBottom 1.6s ease-in forwards; font-size: 20px; }
+@keyframes flowToBottom { 0% { opacity: 1; transform: translate(-50%, 0) scale(1); } 70% { opacity: 1; transform: translate(-50%, 40px) scale(1.1); } 100% { opacity: 0; transform: translate(-50%, 80px) scale(0.8); } }
+@media (max-width: 800px) { .analytics-grid { grid-template-columns: 1fr; } }

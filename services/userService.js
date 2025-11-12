@@ -51,59 +51,37 @@ export async function updateBalance(telegramId, amount) {
   return result.rows[0]?.balance || 0;
 }
 
+import { addResident } from './residentService.js';
+
 export async function addReferral(telegramId, referrerCandidateId) {
-  // Place the new user under the referrerCandidate using breadth-first search
-  // to find the first node with less than 3 direct children.
+  // Keep the original referrer as referrer_id (they invited the user),
+  // but place the user into the referrer's city structure (residents) using the residentService logic.
   const candidate = referrerCandidateId ? referrerCandidateId.toString() : null;
   if (!candidate) {
-    // No referrer provided
     return null;
   }
 
-  const queue = [candidate];
-  let actualReferrer = null;
-
-  while (queue.length > 0) {
-    const current = queue.shift();
-    // Count direct children
-    const countRes = await query(
-      'SELECT COUNT(*) as count FROM users WHERE referrer_id = $1',
-      [current]
-    );
-    const cnt = parseInt(countRes.rows[0].count, 10) || 0;
-    if (cnt < 3) {
-      actualReferrer = current;
-      break;
-    }
-
-    // Enqueue children
-    const childrenRes = await query(
-      'SELECT telegram_id FROM users WHERE referrer_id = $1 ORDER BY created_at ASC',
-      [current]
-    );
-    for (const r of childrenRes.rows) {
-      queue.push(r.telegram_id.toString());
-    }
-  }
-
-  if (!actualReferrer) {
-    // fallback to original candidate
-    actualReferrer = candidate;
-  }
-
-  // Update new user's referrer
+  // Set the user's referrer to the original inviter
   await query(
     'UPDATE users SET referrer_id = $1, updated_at = CURRENT_TIMESTAMP WHERE telegram_id = $2',
-    [actualReferrer, telegramId]
+    [candidate, telegramId]
   );
 
-  // Increment total_referrals for the actual referrer
+  // Increment total_referrals for the original inviter
   await query(
     'UPDATE users SET total_referrals = total_referrals + 1, updated_at = CURRENT_TIMESTAMP WHERE telegram_id = $1',
-    [actualReferrer]
+    [candidate]
   );
 
-  return actualReferrer;
+  // Add the user as a resident under the inviter's city (this will compute level correctly)
+  try {
+    await addResident(candidate, telegramId);
+  } catch (err) {
+    // Non-fatal: if city not found or other error, just log
+    console.warn('Failed to add resident under inviter:', err.message);
+  }
+
+  return candidate;
 }
 
 export async function getReferralCount(telegramId) {
