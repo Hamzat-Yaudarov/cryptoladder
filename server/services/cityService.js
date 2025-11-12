@@ -8,15 +8,24 @@ const REFERRAL_BONUS = 0.5; // Stars
 /**
  * Create a new city for a user
  */
-export async function createCity(userId, username) {
+export async function createCity(telegramId, username) {
   try {
+    const numTelegramId = Number(telegramId);
+
+    console.log('🏗️ createCity called with telegramId:', telegramId, 'type:', typeof telegramId);
+    console.log('   Converted to number:', numTelegramId, 'type:', typeof numTelegramId);
+
+    if (!numTelegramId || isNaN(numTelegramId) || numTelegramId <= 0) {
+      throw new Error(`Invalid telegramId for createCity: ${telegramId}`);
+    }
+
     const referralCode = generateReferralCode();
-    
+
     const cityRes = await query(
       `INSERT INTO cities (user_id, referral_code, total_houses)
        VALUES ($1, $2, 2)
        RETURNING *`,
-      [userId, referralCode]
+      [numTelegramId, referralCode]
     );
     
     const city = cityRes.rows[0];

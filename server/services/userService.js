@@ -8,12 +8,25 @@ import { v4 as uuidv4 } from 'uuid';
 export async function getOrCreateUser(telegramData) {
   try {
     const {
-      id: telegramId,
+      id: rawTelegramId,
       username,
       first_name,
       last_name,
     } = telegramData;
-    
+
+    // Convert to number (Telegram might send as string)
+    const telegramId = Number(rawTelegramId);
+
+    console.log('🔍 getOrCreateUser called');
+    console.log('   Raw telegramId:', rawTelegramId, 'type:', typeof rawTelegramId);
+    console.log('   Converted telegramId:', telegramId, 'type:', typeof telegramId);
+
+    // Ensure telegramId is valid number
+    if (!telegramId || isNaN(telegramId) || telegramId <= 0) {
+      console.error('❌ Invalid telegram_id:', { rawValue: rawTelegramId, converted: telegramId, fullData: telegramData });
+      throw new Error(`Invalid telegram_id: got ${rawTelegramId} (type: ${typeof rawTelegramId})`);
+    }
+
     // Check if user exists
     const existingRes = await query(
       `SELECT * FROM users WHERE telegram_id = $1`,
@@ -21,7 +34,19 @@ export async function getOrCreateUser(telegramData) {
     );
     
     if (existingRes.rows.length > 0) {
-      return existingRes.rows[0];
+      const existingUser = existingRes.rows[0];
+      console.log('📦 Existing user found:', { id: existingUser.id, telegram_id: existingUser.telegram_id });
+
+      // Ensure telegram_id is a number
+      return {
+        id: existingUser.id,
+        telegram_id: parseInt(existingUser.telegram_id),
+        username: existingUser.username,
+        first_name: existingUser.first_name,
+        last_name: existingUser.last_name,
+        created_at: existingUser.created_at,
+        updated_at: existingUser.updated_at,
+      };
     }
     
     // Create new user
@@ -33,14 +58,23 @@ export async function getOrCreateUser(telegramData) {
       [userId, telegramId, username, first_name, last_name]
     );
     
-    const user = newUserRes.rows[0];
-    
+    const newUser = newUserRes.rows[0];
+
     // Create city for new user
     await createCity(telegramId, username);
-    
+
     console.log(`✅ New user created: ${first_name} (${telegramId})`);
-    
-    return user;
+
+    // Return with correct telegram_id type
+    return {
+      id: newUser.id,
+      telegram_id: parseInt(newUser.telegram_id),
+      username: newUser.username,
+      first_name: newUser.first_name,
+      last_name: newUser.last_name,
+      created_at: newUser.created_at,
+      updated_at: newUser.updated_at,
+    };
   } catch (error) {
     console.error('Error getting or creating user:', error);
     throw error;
