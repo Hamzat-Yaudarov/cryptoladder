@@ -2,7 +2,8 @@
 
 -- Users (Players)
 CREATE TABLE IF NOT EXISTS users (
-  telegram_id BIGINT PRIMARY KEY,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  telegram_id BIGINT UNIQUE NOT NULL,
   username VARCHAR(255),
   first_name VARCHAR(255),
   last_name VARCHAR(255),

@@ -220,9 +220,9 @@ export async function addHouseToCity(cityId) {
   try {
     const housesRes = await query(
       `SELECT COUNT(*) as count FROM houses WHERE city_id = $1`,
-      [housesRes.rows[0].count]
+      [cityId]
     );
-    
+
     const newLevel = parseInt(housesRes.rows[0].count) + 1;
     
     const result = await query(

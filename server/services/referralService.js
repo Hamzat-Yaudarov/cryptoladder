@@ -6,8 +6,6 @@ const REFERRAL_BONUS = 0.5; // Stars for first factory activation
  * Join a city via referral code
  */
 export async function joinCityViaReferral(newUserId, referralCode) {
-  const client = await query();
-  
   try {
     // Find the city with this referral code
     const cityRes = await query(
