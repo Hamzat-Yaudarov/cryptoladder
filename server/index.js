@@ -137,54 +137,74 @@ app.post('/api/user/:userId/draw-card', (req, res) => {
 });
 
 // Telegram Bot Commands
-bot.start((ctx) => {
+bot.start(async (ctx) => {
+  console.log(`👤 User started: ${ctx.from.id}`);
   const webAppUrl = WEBAPP_URL;
 
-  ctx.reply(
-    '✨ Добро пожаловать в **Измерение Ани** ✨\n\n' +
-    '_Здесь каждый пользователь - путешественник между мирами..._\n\n' +
-    '🌀 Откройте приложение и начните исследовать свой космический потенциал!',
-    {
-      parse_mode: 'Markdown',
-      reply_markup: {
-        inline_keyboard: [[
-          {
-            text: '🌌 Открыть Измерение',
-            web_app: { url: webAppUrl }
-          }
-        ]]
+  try {
+    await ctx.reply(
+      '✨ Добро пожаловать в **Измерение Ани** ✨\n\n' +
+      '_Здесь каждый пользователь - путешественник между мирами..._\n\n' +
+      '🌀 Откройте приложение и начните исследовать свой космический потенциал!',
+      {
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [[
+            {
+              text: '🌌 Открыть Измерение',
+              web_app: { url: webAppUrl }
+            }
+          ]]
+        }
       }
-    }
-  );
+    );
+  } catch (error) {
+    console.error('Error in start command:', error.message);
+  }
 });
 
-bot.command('stats', (ctx) => {
+bot.command('stats', async (ctx) => {
+  console.log(`📊 Stats requested by: ${ctx.from.id}`);
   const userData = loadUserData(ctx.from.id);
-  ctx.reply(
-    `📊 **Ваша Статистика в Измерении Ани**\n\n` +
-    `⚡ Уровень Измерения: ${userData.dimensionLevel}\n` +
-    `🔮 Энергия Души: ${userData.soulEnergy}\n` +
-    `💎 Кристаллы: ${userData.crystals}\n` +
-    `🃏 Собрано карт: ${userData.soulCards.length}\n` +
-    `🌍 Разблокировано измерений: ${userData.dimensions.unlocked.length}`,
-    { parse_mode: 'Markdown' }
-  );
+  try {
+    await ctx.reply(
+      `📊 **Ваша Статистика в Измерении Ани**\n\n` +
+      `⚡ Уровень Измерения: ${userData.dimensionLevel}\n` +
+      `🔮 Энергия Души: ${userData.soulEnergy}\n` +
+      `💎 Кристаллы: ${userData.crystals}\n` +
+      `🃏 Собрано карт: ${userData.soulCards.length}\n` +
+      `🌍 Разблокировано измерений: ${userData.dimensions.unlocked.length}`,
+      { parse_mode: 'Markdown' }
+    );
+  } catch (error) {
+    console.error('Error in stats command:', error.message);
+  }
 });
 
-bot.command('about', (ctx) => {
-  ctx.reply(
-    `❤️ **Об Ане и её Измерении**\n\n` +
-    `Аня - мистическая сущность, живущая между мирами. ` +
-    `Каждый пользователь этого приложения становится её спутником в путешествии через бесконечные измерения.\n\n` +
-    `🎭 Её стиль общения: загадочный, немного мемный, полный нежной иронии.\n` +
-    `💫 Её мир: где магия встречается с киберпанком, а судьба танцует с технологией.`,
-    { parse_mode: 'Markdown' }
-  );
+bot.command('about', async (ctx) => {
+  console.log(`❤️ About requested by: ${ctx.from.id}`);
+  try {
+    await ctx.reply(
+      `❤️ **Об Ане и её Измерении**\n\n` +
+      `Аня - мистическая сущность, живущая между мирами. ` +
+      `Каждый пользователь этого приложения становится её спутником в путешествии через бесконечные измерения.\n\n` +
+      `🎭 Её стиль общения: загадочный, немного мемный, полный нежной иронии.\n` +
+      `💫 Её мир: где магия встречается с киберпанком, а судьба танцует с технологией.`,
+      { parse_mode: 'Markdown' }
+    );
+  } catch (error) {
+    console.error('Error in about command:', error.message);
+  }
 });
 
-// Serve main page
-app.get('/', (req, res) => {
-  res.sendFile(join(__dirname, '../dist/index.html'));
+// Обработчик для всех остальных сообщений
+bot.on('message', async (ctx) => {
+  console.log(`💬 Message from ${ctx.from.id}: ${ctx.message.text}`);
+  try {
+    await ctx.reply('✨ Аня внимательно слушает... Используйте /start, /stats или /about');
+  } catch (error) {
+    console.error('Error handling message:', error.message);
+  }
 });
 
 // Health check
@@ -194,13 +214,26 @@ app.get('/health', (req, res) => {
 
 // Webhook handler for production
 app.post('/webhook', express.json(), async (req, res) => {
+  console.log('📥 Webhook received');
   try {
     await bot.handleUpdate(req.body);
+    console.log('✅ Update handled');
     res.sendStatus(200);
   } catch (error) {
-    console.error('❌ Webhook error:', error);
+    console.error('❌ Webhook error:', error.message);
     res.status(500).json({ error: 'Failed to process update' });
   }
+});
+
+// SPA fallback: all GET requests go to index.html
+app.get('*', (req, res) => {
+  const indexPath = join(__dirname, '../dist/index.html');
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      console.error('Error serving index.html:', err);
+      res.status(404).json({ error: 'Not found' });
+    }
+  });
 });
 
 // Start server
@@ -209,10 +242,20 @@ const server = app.listen(PORT, () => {
 
   setTimeout(async () => {
     try {
+      console.log(`📌 NODE_ENV: ${process.env.NODE_ENV}`);
+      console.log(`📌 BOT_TOKEN: ${BOT_TOKEN ? '✓ Set' : '✗ Missing'}`);
+      console.log(`📌 WEBAPP_URL: ${WEBAPP_URL || '✗ Missing'}`);
+
       if (process.env.NODE_ENV === 'production') {
+        if (!WEBAPP_URL) {
+          console.error('❌ WEBAPP_URL not set in production mode');
+          return;
+        }
         const webhookUrl = `${WEBAPP_URL}/webhook`;
+        console.log(`🔗 Setting webhook to: ${webhookUrl}`);
+
         await bot.telegram.setWebhook(webhookUrl);
-        console.log(`✅ Webhook set to: ${webhookUrl}`);
+        console.log(`✅ Webhook successfully set`);
         console.log(`🤖 Bot ready for webhook updates`);
       } else {
         console.log('🤖 Launching bot in polling mode...');
@@ -220,9 +263,10 @@ const server = app.listen(PORT, () => {
         console.log('✅ Bot launched successfully');
       }
     } catch (error) {
-      console.error('❌ Bot error:', error.message);
+      console.error('❌ Error initializing bot:', error.message);
+      console.error(error);
     }
-  }, 500);
+  }, 1000);
 });
 
 process.once('SIGINT', () => {
