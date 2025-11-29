@@ -193,12 +193,14 @@ app.get('/health', (req, res) => {
 });
 
 // Webhook handler for production
-app.post('/webhook', express.json(), (req, res) => {
-  bot.handleUpdate(req.body).catch((err) => {
-    console.error('Webhook error:', err);
-    res.status(500).send('Server error');
-  });
-  res.sendStatus(200);
+app.post('/webhook', express.json(), async (req, res) => {
+  try {
+    await bot.handleUpdate(req.body);
+    res.sendStatus(200);
+  } catch (error) {
+    console.error('❌ Webhook error:', error);
+    res.status(500).json({ error: 'Failed to process update' });
+  }
 });
 
 // Start server
