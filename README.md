@@ -1,215 +1,200 @@
-# 🏙️ CityLadder - Telegram MiniApp
+# 🌌 Измерение Ани - Anya's Dimension Matrix
 
-Экономическая игра на Telegram, где пользователи строят города, приглашают жителей и зарабатывают звёзды ⭐️.
+A unique Telegram MiniApp featuring mystical dimension-hopping adventures, soul card collection, and cosmic power unlocking.
 
-## 🚀 Инструкция по развёртыванию
+## 🎭 **About Anya's World**
 
-### Требования
-- Node.js 16+
-- PostgreSQL (Neon)
-- Telegram Bot Token
+Anya is a mysterious entity that exists between dimensions. In her world, every user becomes a dimension traveler discovering alternate realities, collecting cosmic cards, and unlocking ancient powers.
 
-### Установка зависимостей
+**Bot Username**: `@cryptoladderbot`
 
+**App Style**: Cyberpunk-Mystical with neon purples, electric teals, and ethereal animations.
+
+## 🎮 **Core Mechanics**
+
+### Main Screen
+- **Soul Energy**: Resource system with visual bar (0-300 capacity)
+- **Daily Bonuses**: Claim daily rewards for login streaks
+- **Three Actions**: Meditate (10 energy), Explore (20 energy), Summon (30 energy)
+- **Crystal Currency**: Earn crystals through actions
+
+### 🌌 Dimension Explorer
+- **6 Mystical Worlds**: Crystalline Forest, Cyber Mirror, Void Emptiness, Star Ark, Pulsing Ocean, Abandoned Temple
+- **Unlock System**: Progressively unlock new dimensions
+- **World Lore**: Each dimension has unique backstory and mechanics
+
+### 🃏 Soul Deck
+- **Card Draws**: Summon random cards with rarity tiers (Common, Rare, Epic)
+- **Card Stats**: Each card has power levels (1-100)
+- **Collection Tracking**: View all cards organized by rarity
+
+### ⚡ Ability System
+- **6 Ultimate Powers**: Unlock through meeting specific requirements
+- **Progressive Unlocking**: Requirements scale with player progress
+- **Requirements Examples**:
+  - Vision of Truth: Collect 5 cards
+  - Time Fracture: Soul Energy > 150
+  - Crystal Teleportation: Unlock 3+ dimensions
+  - Universe Echo: 2+ Epic cards
+  - Infinite Crystal: Level 3+ dimension
+  - Dimension Fusion: All 6 worlds unlocked
+
+## 🚀 **Setup & Deployment**
+
+### Local Development
+
+1. **Install dependencies**:
 ```bash
 npm install
 ```
 
-### Конфигурация окружения
+2. **Configure environment variables**:
+- Copy `.env.example` to `.env.local`
+- Update values with your Telegram bot credentials
 
-Обновите переменные в `.env` файле:
-
-```env
-NODE_ENV=production
-PORT=8080
-BOT_TOKEN=ваш_токен_бота
-BOT_USERNAME=имя_бота
-WEBAPP_URL=��аш_публичный_URL
-DATABASE_URL=ваша_строка_подключения_postgres
-```
-
-### Инициализация базы данных
-
-База данных инициализируется автоматически при запуске сервера. Схема находится в `database/schema.sql`.
-
-### Запуск проекта
-
-```bash
-npm start
-```
-
-Или для разработки:
-
+3. **Start development servers** (runs both frontend & backend with hot reload):
 ```bash
 npm run dev
 ```
 
-## 📁 Структура проекта
+The development setup runs:
+- **Frontend**: Vite dev server on `http://localhost:5173` with hot reload
+- **Backend**: Node/Express on `http://localhost:8080`
+- **Bot**: Polling mode for local testing
+
+4. **Test the MiniApp**:
+- Open Telegram and message `@cryptoladderbot` (or your bot username)
+- Click the button to open the MiniApp
+- Or directly test frontend at `http://localhost:5173`
+
+### Environment Variables
 
 ```
-├── bot/
-│   └── telegramBot.js          # Логика Telegram бота
-├── database/
-│   ├── client.js               # Клиент для подключения к БД
-│   └── schema.sql              # Схема базы данных
-├── services/
-│   ├── userService.js          # Управление пользователями
-│   ├── cityService.js          # Управление городами
-│   ├── factoryService.js       # Управление заводами и доходом
-│   ├── residentService.js      # Управление жителями/реферралами
-│   └── ratingService.js        # Еженедельный рейтинг
-├── routes/
-│   └── api.js                  # API маршруты
+BOT_TOKEN=8212904290:AAE2-EfWsYZ_kwVLMM4GOJMHkfwd4d2lW8M
+BOT_USERNAME=cryptoladderbot
+WEBAPP_URL=https://cryptoladder-production.up.railway.app
+NODE_ENV=production
+PORT=8080
+```
+
+### Railway Deployment
+
+**Option 1: Via Web UI (Recommended)**
+1. Push code to GitHub
+2. Connect repository to Railway project
+3. Set environment variables in Railway dashboard:
+   - `BOT_TOKEN` - Your Telegram bot token
+   - `BOT_USERNAME` - Your bot's username
+   - `WEBAPP_URL` - Your Railway app URL (e.g., https://your-app-production.up.railway.app)
+   - `NODE_ENV` - Set to `production`
+   - `PORT` - Set to `8080`
+4. Deploy - Railway auto-detects Node.js and runs:
+   - Install: `npm install`
+   - Build: `npm run build` (via Procfile)
+   - Start: `npm start`
+
+**Option 2: Via Railway CLI**
+```bash
+railway login
+railway init
+railway environment add production
+railway variables set BOT_TOKEN=<token> BOT_USERNAME=<username> WEBAPP_URL=<url> NODE_ENV=production PORT=8080
+railway up
+```
+
+**Important Notes**:
+- The Procfile ensures the build step (`npm run build`) runs before the server starts
+- This builds the Vite bundle and outputs to `/dist`
+- Express then serves these built files to users
+- The webhook is set automatically when `NODE_ENV=production`
+- Your WEBAPP_URL must be set correctly for the Telegram MiniApp to work
+
+## 📁 **Project Structure**
+
+```
+.
 ├── server/
-│   └── index.js                # Express сервер
-├── frontend/
-│   ├── src/
-│   │   ├── App.jsx            # Главный компонент
-│   │   ├── main.jsx           # Точка входа React
-│   │   ├── tabs/              # Компоненты вкладок
-│   │   ├── components/        # Переиспользуемые компоненты
-│   │   ├── hooks/             # Custom React hooks
-│   │   └── styles/            # CSS файлы
-│   └── index.html
-├── vite.config.js             # Конфигурация Vite
+│   └── index.js           # Express + Telegraf bot server
+├── client/
+│   ├── index.html         # HTML entry point
+│   └── src/
+│       ├── main.jsx       # React entry point
+│       ├── App.jsx        # Main app with routing
+│       ├── index.css      # Global cyberpunk styles
+│       ├── services/
+│       │   └── TelegramService.js  # Telegram WebApp API
+│       └── screens/
+│           ├── MainScreen.jsx      # Home with actions
+│           ├── DimensionExplorer.jsx  # World selection
+│           ├── SoulDeck.jsx        # Card collection
+│           └── AbilitiesScreen.jsx # Power unlocking
+├── vite.config.js         # Vite build config
 ├── package.json
-├── .env
+├── railway.toml          # Railway deployment config
+├── Procfile              # Railway startup script
 └── README.md
 ```
 
-## 🎮 Основные функции
+## 🎨 **Design System**
 
-### 1. Создание города
-- Стоимость: 3⭐️
-- Получение: 2 дома, 1 завод, реферальная ссылка
+### Color Palette
+- **Primary Neon**: `#b800e6` (Mystical Purple)
+- **Secondary Neon**: `#00ffff` (Cyan Glow)
+- **Tertiary Neon**: `#ff006b` (Hot Magenta)
+- **Success**: `#00ff88` (Neon Green)
+- **Background**: Dark gradients with transparency
 
-### 2. Управление заводом
-- Активация: 10⭐️ на 24 часа
-- Прибыль распределяется жителям по уровням
+### Typography
+- **Font**: Courier New (monospace cyberpunk aesthetic)
+- **Weights**: 700 (bold), 900 (titles)
+- **Letter Spacing**: 1-2px for uppercase headers
 
-### 3. Система реферралов
-- Приглашённые игроки становятся жителями
-- Автоматическое распределение по уровням (до 5)
-- Доход от их активности
+### Animations
+- **Glow Pulse**: Text shadow animation for mystique
+- **Float**: Subtle vertical movement on key elements
+- **Shimmer**: Light sweep effects on buttons
+- **Card Flip**: 3D rotation for card reveals
 
-### 4. Еженедельный рейтинг
-- Top 5 игроков получают награды
-- 🥇 1 место: 100⭐️
-- 🥈 2 место: 75⭐️
-- 🥉 3 место: 50⭐️
-- 4-5 места: 25⭐️ и 15⭐️
+## 🔧 **API Endpoints**
 
-### 5. Система доходов
-Прибыль от активированного завода распределяется:
-- Уровень 1 (3 игрока): 4⭐️ за игрока
-- Уровень 2 (9 игроков): 2.5⭐️ за игрока
-- Уровень 3 (27 игроков): 1.7⭐️ за игрока
-- Уровень 4 (81 игрок): 1⭐️ за игрока
-- Уровень 5 (243 игрока): 0.5⭐️ за игрока
+### User Management
+- `POST /api/user/:userId` - Get/initialize user data
+- `POST /api/user/:userId/claim-daily` - Claim daily bonus
+- `POST /api/user/:userId/action` - Perform action (meditate/explore/summon)
+- `POST /api/user/:userId/unlock-dimension` - Unlock next dimension
+- `POST /api/user/:userId/draw-card` - Draw a soul card
 
-## 🔗 API Endpoints
+### Telegram Bot
+- `/start` - Initialize bot with MiniApp link
+- `/stats` - Show user statistics
+- `/about` - Learn about Anya
 
-### User
-- `GET /api/user` - Получить информацию о пользователе
-- `GET /api/profit-history` - История выплат
-- `GET /api/profit-today` - Доход за сегодня
+## 💬 **Anya's Personality**
 
-### City
-- `POST /api/city/create` - Создать город (3⭐️)
-- `GET /api/city` - Получить информацию о городе
-- `POST /api/city/upgrade` - Улучшить город
+Anya speaks in a mysterious, poetic style with hints of memes and dark humor:
+- "Каждое измерение хранит сокровища. Не торопись. Аня всегда будет с тобой."
+- Treats users as cosmic travelers in her personal magical world
+- Provides cryptic hints about power unlocking requirements
+- Celebrates player achievements with ethereal messages
 
-### Factory
-- `POST /api/factory/activate` - Активировать завод (10⭐️)
-- `GET /api/factory/active` - Получить активные заводы
-- `GET /api/factory/stats` - Статистика завод��в
+## 📱 **Telegram MiniApp Integration**
 
-### Residents
-- `GET /api/residents` - Список жителей
-- `GET /api/residents/count` - Количество жителей
-- `GET /api/residents/distribution` - Распределение по уровням
+- Uses official Telegram WebApp API
+- Haptic feedback on interactions
+- Theme colors matched to app aesthetics
+- Fullscreen responsive design
+- Works seamlessly within Telegram chat
 
-### Rating
-- `GET /api/rating/current` - Текущий рейтинг пользователя
-- `GET /api/rating/top` - Топ рейтинга
-- `POST /api/rating/claim-reward` - Получить награду
+## 🎯 **Future Enhancement Ideas**
 
-## 🛡️ Безопасность
-
-- Все операции требуют telegram_id
-- Проверка баланса перед транзакциями
-- Защита от накруток через проверку Telegram ID
-- SSL для БД подключения
-
-## 📱 Telegram MiniApp
-
-- Webhook для получения обновлений от бота
-- Web App для игровой логики
-- Поддержка Telegram Web App API
-
-## 🔄 Жизненный цикл игрока
-
-1. Пользователь нажимает кнопку "Открыть игру" в боте
-2. Загружается MiniApp
-3. Создаёт город (опционально)
-4. Активирует завод (опционально)
-5. Приглашает друзей по реферальной ссылке
-6. Приглашённые игроки становятся жителями
-7. Получает доход каждый час от активных заводов жителей
-8. Участвует в еженедельном рейтинге
-
-## 🐛 Troubleshooting
-
-### Проблема с подключением к БД
-- Проверьте DATABASE_URL в .env
-- Убедитесь, что Neon аккаунт активен
-
-### Бот не отвечает
-- Проверьте BOT_TOKEN в .env
-- Убедитесь, что WEBAPP_URL доступен
-- Проверьте логи сервера
-
-### MiniApp не загружается
-- Проверьте, что фронтенд собран: `npm run build`
-- Убедитесь, что WEBAPP_URL правильно установлен в .env
-
-## 📊 Мониторинг
-
-Логи выводятся в консоль. Для продакшена рекомендуется использовать:
-- Sentry для отслеживания ошибок
-- логирование в файлы
-
-## 🚀 Развёртывание на Railway
-
-1. Подключите репозиторий к Railway
-2. Установите переменные окружения в Railway dashboard
-3. Railway автоматически запустит `npm start`
-4. МiniApp будет доступен по WEBAPP_URL
-
-## 📈 Масштабир��вание
-
-Для большого количества игроков:
-- Используйте Redis для кеширования
-- Оптимизируйте запросы к БД (индексы уже созданы)
-- Рассмотрите микросервисы для обработки доходов
-- Настройте CDN для статики
-
-## 📝 Лицензия
-
-MIT
-
-## 👨‍💻 Разработка
-
-Дополнительные команды:
-
-```bash
-# Собрать фронтенд
-npm run build
-
-# Предпросмотр собранного фронтенда
-npm run preview
-```
+- Multiplayer dimension quests
+- Trading cards with other users
+- Leaderboards by dimension level
+- Special events and limited-time cards
+- Soundtrack with mystical ambient music
+- NFT integration for rare cards
+- Community lore contributions
 
 ---
 
-**CityLadder v1.0.0** - Вашему успеху! 🚀
+**Created with ✨ for the curious travelers of the digital cosmos**

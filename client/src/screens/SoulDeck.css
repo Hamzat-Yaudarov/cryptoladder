@@ -1,0 +1,303 @@
+.draw-btn {
+  width: 100%;
+  padding: 24px;
+  background: linear-gradient(135deg, var(--primary-neon), var(--secondary-neon));
+  color: var(--dark-bg);
+  border: none;
+  border-radius: 8px;
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.draw-btn:hover:not(:disabled) {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(184, 0, 230, 0.4);
+}
+
+.draw-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.draw-icon {
+  font-size: 24px;
+  animation: spin 1s linear infinite;
+}
+
+.draw-btn:not(:disabled) .draw-icon {
+  animation: none;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.draw-text {
+  font-size: 14px;
+}
+
+.card-draw-animation {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 10, 26, 0.95);
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.card-draw-content {
+  background: var(--card-bg);
+  border: 3px solid;
+  border-radius: 12px;
+  padding: 32px 24px;
+  text-align: center;
+  animation: cardFlip 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.card-draw-animation.epic .card-draw-content {
+  border-color: #ff3366;
+  box-shadow: 0 0 40px #ff3366;
+}
+
+.card-draw-animation.rare .card-draw-content {
+  border-color: #00ff88;
+  box-shadow: 0 0 40px #00ff88;
+}
+
+.card-draw-animation.common .card-draw-content {
+  border-color: var(--secondary-neon);
+  box-shadow: 0 0 40px var(--secondary-neon);
+}
+
+@keyframes cardFlip {
+  0% {
+    transform: rotateY(90deg) scale(0.5);
+    opacity: 0;
+  }
+  100% {
+    transform: rotateY(0deg) scale(1);
+    opacity: 1;
+  }
+}
+
+.draw-message {
+  font-size: 14px;
+  color: var(--secondary-neon);
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.card-draw-name {
+  font-size: 24px;
+  font-weight: 900;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+
+.card-draw-rarity {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+
+.card-draw-power {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--warn-color);
+}
+
+.rarity-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.rarity-section {
+  background: var(--card-bg);
+  border: 1px solid;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.epic-section {
+  border-color: #ff3366;
+  background: rgba(255, 51, 102, 0.05);
+}
+
+.rare-section {
+  border-color: #00ff88;
+  background: rgba(0, 255, 136, 0.05);
+}
+
+.common-section {
+  border-color: var(--secondary-neon);
+  background: rgba(0, 255, 255, 0.05);
+}
+
+.rarity-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+  margin: 0 0 12px 0;
+}
+
+.epic-section .rarity-title {
+  color: #ff3366;
+}
+
+.rare-section .rarity-title {
+  color: #00ff88;
+}
+
+.common-section .rarity-title {
+  color: var(--secondary-neon);
+}
+
+.cards-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.card-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid;
+  border-radius: 6px;
+  padding: 12px;
+  transition: all 0.3s ease;
+}
+
+.epic-card {
+  border-color: #ff3366;
+}
+
+.epic-card:hover {
+  background: rgba(255, 51, 102, 0.15);
+  box-shadow: 0 0 15px rgba(255, 51, 102, 0.3);
+}
+
+.rare-card {
+  border-color: #00ff88;
+}
+
+.rare-card:hover {
+  background: rgba(0, 255, 136, 0.15);
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+}
+
+.common-card {
+  border-color: var(--secondary-neon);
+}
+
+.common-card:hover {
+  background: rgba(0, 255, 255, 0.15);
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+}
+
+.card-header {
+  margin-bottom: 8px;
+}
+
+.card-name {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: block;
+}
+
+.card-power {
+  font-size: 11px;
+  color: var(--warn-color);
+  font-weight: 700;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.empty-emoji {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.empty-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.empty-hint {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.collection-stats {
+  background: var(--card-bg);
+  border: 1px solid var(--primary-neon);
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 12px;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 12px;
+}
+
+.stat-row:last-child {
+  border-bottom: none;
+}
+
+.stat-value {
+  color: var(--primary-neon);
+  font-weight: 700;
+}
+
+@media (max-width: 480px) {
+  .cards-list {
+    grid-template-columns: 1fr;
+  }
+
+  .draw-btn {
+    padding: 18px;
+    font-size: 14px;
+  }
+
+  .card-draw-content {
+    padding: 24px 16px;
+  }
+}

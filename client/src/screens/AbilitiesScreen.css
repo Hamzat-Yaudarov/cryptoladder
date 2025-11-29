@@ -1,0 +1,187 @@
+.abilities-intro {
+  background: var(--card-bg);
+  border: 1px solid var(--secondary-neon);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.1);
+}
+
+.intro-text {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.abilities-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.ability-card {
+  background: var(--card-bg);
+  border: 2px solid;
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.3s ease;
+}
+
+.ability-card.unlockable {
+  border-color: var(--secondary-neon);
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.1);
+}
+
+.ability-card.unlockable:hover {
+  border-color: var(--primary-neon);
+  background: rgba(184, 0, 230, 0.05);
+  box-shadow: 0 0 25px rgba(184, 0, 230, 0.3);
+}
+
+.ability-card.locked {
+  border-color: rgba(255, 255, 255, 0.1);
+  opacity: 0.7;
+}
+
+.ability-header {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  align-items: flex-start;
+}
+
+.ability-emoji {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.ability-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ability-name {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+  color: var(--text-primary);
+}
+
+.ability-description {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.ability-requirement {
+  margin-bottom: 10px;
+}
+
+.req-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: block;
+}
+
+.req-label.met {
+  color: #00ff88;
+}
+
+.req-label.unmet {
+  color: #ff3366;
+}
+
+.ability-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.ability-effect {
+  font-size: 11px;
+  color: var(--secondary-neon);
+  font-style: italic;
+}
+
+.ability-cost {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--primary-neon);
+}
+
+.ability-unlock-btn {
+  width: 100%;
+  padding: 10px;
+  background: transparent;
+  border: 1px solid var(--secondary-neon);
+  border-radius: 4px;
+  color: var(--secondary-neon);
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ability-unlock-btn:hover:not(.disabled) {
+  background: rgba(0, 255, 255, 0.15);
+  border-color: var(--primary-neon);
+  color: var(--primary-neon);
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+}
+
+.ability-unlock-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.abilities-lore {
+  background: var(--card-bg);
+  border: 1px solid var(--primary-neon);
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.lore-title {
+  font-size: 12px;
+  color: var(--primary-neon);
+  font-weight: 700;
+  margin-bottom: 8px;
+  margin: 0 0 8px 0;
+}
+
+.lore-text {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  font-style: italic;
+  margin: 0;
+}
+
+@media (max-width: 480px) {
+  .ability-header {
+    gap: 10px;
+  }
+
+  .ability-emoji {
+    font-size: 24px;
+  }
+
+  .ability-name {
+    font-size: 13px;
+  }
+
+  .ability-card {
+    padding: 14px;
+  }
+}

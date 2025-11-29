@@ -1,0 +1,177 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --primary-neon: #b800e6;
+  --secondary-neon: #00ffff;
+  --tertiary-neon: #ff006b;
+  --dark-bg: #0a0a1a;
+  --darker-bg: #05050f;
+  --card-bg: #1a1a3a;
+  --text-primary: #e6e6ff;
+  --text-secondary: #9999cc;
+  --accent-glow: #00ffff;
+  --success-color: #00ff88;
+  --warn-color: #ffcc00;
+  --error-color: #ff3366;
+}
+
+body {
+  font-family: 'Courier New', monospace;
+  background: linear-gradient(135deg, var(--darker-bg) 0%, var(--dark-bg) 100%);
+  color: var(--text-primary);
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+}
+
+/* Text Styles */
+.text-title {
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, var(--secondary-neon), var(--primary-neon));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-subtitle {
+  font-size: 18px;
+  color: var(--secondary-neon);
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.text-body {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.text-small {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Button Styles */
+.btn {
+  padding: 12px 24px;
+  border: 2px solid var(--secondary-neon);
+  background: rgba(0, 255, 255, 0.1);
+  color: var(--secondary-neon);
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.btn:hover::before {
+  left: 100%;
+}
+
+.btn:hover {
+  background: rgba(0, 255, 255, 0.2);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.btn-primary {
+  border-color: var(--primary-neon);
+  color: var(--primary-neon);
+  background: rgba(184, 0, 230, 0.1);
+}
+
+.btn-primary:hover {
+  background: rgba(184, 0, 230, 0.2);
+  box-shadow: 0 0 20px rgba(184, 0, 230, 0.5);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Card Styles */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--secondary-neon);
+  border-radius: 8px;
+  padding: 16px;
+  margin: 8px 0;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+  border-color: var(--primary-neon);
+}
+
+/* Animations */
+@keyframes glow-pulse {
+  0%, 100% { text-shadow: 0 0 10px var(--secondary-neon); }
+  50% { text-shadow: 0 0 20px var(--primary-neon); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.glow-text {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+.float-element {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .text-title {
+    font-size: 20px;
+  }
+
+  .text-subtitle {
+    font-size: 16px;
+  }
+
+  .btn {
+    padding: 10px 16px;
+    font-size: 11px;
+  }
+
+  .card {
+    padding: 12px;
+  }
+}

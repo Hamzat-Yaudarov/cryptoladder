@@ -1,48 +1,185 @@
 import express from 'express';
+import { Telegraf } from 'telegraf';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
-import path from 'path';
-import bot from '../bot/telegramBot.js';
-import apiRouter from '../routes/api.js';
-import { initializeDatabase } from '../database/client.js';
+import { dirname, join } from 'path';
+import fs from 'fs';
+import dotenv from 'dotenv';
 
-dotenv.config();
+dotenv.config({ path: '.env.local' });
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
+const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
+const BOT_TOKEN = process.env.BOT_TOKEN;
+const WEBAPP_URL = process.env.WEBAPP_URL;
+
+const bot = new Telegraf(BOT_TOKEN);
 
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '../dist')));
+app.use(express.static(join(__dirname, '../dist')));
 
-// Initialize database
-try {
-  await initializeDatabase();
-  console.log('✅ Database initialized');
-} catch (error) {
-  console.error('❌ Database initialization failed:', error);
-  process.exit(1);
+// User data storage (in-memory for demo, use database in production)
+const usersDb = {};
+
+function loadUserData(userId) {
+  if (!usersDb[userId]) {
+    usersDb[userId] = {
+      userId,
+      username: '',
+      dimensionLevel: 1,
+      soulEnergy: 100,
+      crystals: 0,
+      soulCards: [],
+      abilities: [],
+      dimensions: { unlocked: [1], current: 1 },
+      lastDailyClaimTime: 0,
+      createdAt: Date.now()
+    };
+  }
+  return usersDb[userId];
 }
 
-// API Routes
-app.use('/api', apiRouter);
+// REST API Routes
+app.post('/api/user/:userId', (req, res) => {
+  const userData = loadUserData(req.params.userId);
+  res.json(userData);
+});
 
-// Telegram webhook
-const BOT_USERNAME = process.env.BOT_USERNAME || 'cryptoladderbot';
-const WEBHOOK_URL = `${process.env.WEBAPP_URL}/webhook/${BOT_USERNAME}`;
+app.post('/api/user/:userId/claim-daily', (req, res) => {
+  const userData = loadUserData(req.params.userId);
+  const now = Date.now();
+  const lastClaim = userData.lastDailyClaimTime;
+  
+  if (now - lastClaim < 86400000) {
+    return res.status(400).json({ error: 'Already claimed today' });
+  }
+  
+  const bonus = Math.floor(Math.random() * 50) + 30;
+  userData.soulEnergy += bonus;
+  userData.crystals += 10;
+  userData.lastDailyClaimTime = now;
+  
+  res.json({
+    soulEnergy: userData.soulEnergy,
+    crystals: userData.crystals,
+    bonusEnergy: bonus
+  });
+});
 
-app.post(`/webhook/${BOT_USERNAME}`, (req, res) => {
-  bot.handleUpdate(req.body, res)
-    .then(() => res.status(200).end())
-    .catch((err) => {
-      console.error('Webhook error:', err);
-      res.status(200).end();
-    });
+app.post('/api/user/:userId/action', (req, res) => {
+  const { action } = req.body;
+  const userData = loadUserData(req.params.userId);
+  
+  const actions = {
+    meditate: { energyCost: 10, reward: 5, message: 'Медитируешь в другом измерении...' },
+    explore: { energyCost: 20, reward: 15, message: 'Исследуешь неизведанный мир...' },
+    summon: { energyCost: 30, reward: 25, message: 'Вызываешь сущность из другого измерения...' }
+  };
+  
+  const act = actions[action];
+  if (!act || userData.soulEnergy < act.energyCost) {
+    return res.status(400).json({ error: 'Not enough energy' });
+  }
+  
+  userData.soulEnergy -= act.energyCost;
+  const gained = Math.floor(Math.random() * 10) + act.reward;
+  userData.crystals += gained;
+  
+  res.json({
+    action,
+    message: act.message,
+    gained,
+    soulEnergy: userData.soulEnergy,
+    crystals: userData.crystals
+  });
+});
+
+app.post('/api/user/:userId/unlock-dimension', (req, res) => {
+  const userData = loadUserData(req.params.userId);
+  
+  if (userData.dimensionLevel >= userData.dimensions.unlocked.length) {
+    const nextDim = userData.dimensions.unlocked.length + 1;
+    userData.dimensions.unlocked.push(nextDim);
+    res.json({ newDimension: nextDim });
+  } else {
+    res.status(400).json({ error: 'Already unlocked' });
+  }
+});
+
+app.post('/api/user/:userId/draw-card', (req, res) => {
+  const userData = loadUserData(req.params.userId);
+  const cardRarities = ['common', 'common', 'rare', 'epic'];
+  const cardNames = {
+    common: ['Звездная пыль', 'Лунный луч', 'Ночной ветер'],
+    rare: ['Драконий огонь', 'Ледяная душа', 'Золотой щит'],
+    epic: ['Абсолютный хаос', 'Вечная мудрость', 'Космическое разрушение']
+  };
+  
+  const rarity = cardRarities[Math.floor(Math.random() * cardRarities.length)];
+  const names = cardNames[rarity];
+  const card = {
+    id: Math.random().toString(36),
+    name: names[Math.floor(Math.random() * names.length)],
+    rarity,
+    power: Math.floor(Math.random() * 100) + 1
+  };
+  
+  userData.soulCards.push(card);
+  res.json(card);
+});
+
+// Telegram Bot Commands
+bot.start((ctx) => {
+  const webAppUrl = `${WEBAPP_URL}?user_id=${ctx.from.id}&username=${ctx.from.username || 'Anonymous'}`;
+  
+  ctx.reply(
+    '✨ Добро пожаловать в **Измерение Ани** ✨\n\n' +
+    '_Здесь каждый пользователь - путешественник между мирами..._\n\n' +
+    '🌀 Откройте приложение и начните исследовать свой космический потенциал!',
+    {
+      parse_mode: 'Markdown',
+      reply_markup: {
+        inline_keyboard: [[
+          {
+            text: '🌌 Открыть Измерение',
+            web_app: { url: webAppUrl }
+          }
+        ]]
+      }
+    }
+  );
+});
+
+bot.command('stats', (ctx) => {
+  const userData = loadUserData(ctx.from.id);
+  ctx.reply(
+    `📊 **Ваша Статистика в Измерении Ани**\n\n` +
+    `⚡ Уровень Измерения: ${userData.dimensionLevel}\n` +
+    `🔮 Энергия Души: ${userData.soulEnergy}\n` +
+    `💎 Кристаллы: ${userData.crystals}\n` +
+    `🃏 Собрано карт: ${userData.soulCards.length}\n` +
+    `🌍 Разблокировано измерений: ${userData.dimensions.unlocked.length}`,
+    { parse_mode: 'Markdown' }
+  );
+});
+
+bot.command('about', (ctx) => {
+  ctx.reply(
+    `❤️ **Об Ане и её Измерении**\n\n` +
+    `Аня - мистическая сущность, живущая между мирами. ` +
+    `Каждый пользователь этого приложения становится её спутником в путешествии через бесконечные измерения.\n\n` +
+    `🎭 Её стиль общения: загадочный, немного мемный, полный нежной иронии.\n` +
+    `💫 Её мир: где магия встречается с киберпанком, а судьба танцует с технологией.`,
+    { parse_mode: 'Markdown' }
+  );
+});
+
+// Serve main page
+app.get('/', (req, res) => {
+  res.sendFile(join(__dirname, '../dist/index.html'));
 });
 
 // Health check
@@ -50,36 +187,33 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-// Serve MiniApp
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../dist/index.html'));
+// Webhook handler for production
+app.post('/webhook', express.json(), (req, res) => {
+  bot.handleUpdate(req.body).catch((err) => {
+    console.error('Webhook error:', err);
+    res.status(500).send('Server error');
+  });
+  res.sendStatus(200);
 });
 
 // Start server
-const server = app.listen(PORT, async () => {
+app.listen(PORT, async () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📱 MiniApp available at ${process.env.WEBAPP_URL}`);
-  console.log(`🤖 Telegram bot: @${BOT_USERNAME}`);
-  console.log(`🔗 Webhook URL: ${WEBHOOK_URL}`);
-  
-  // Set webhook on startup (optional, can be done via Telegram API)
+  console.log(`🤖 Bot is ready to receive updates`);
+
   try {
-    await bot.telegram.setWebhook(WEBHOOK_URL, {
-      allowed_updates: ['message', 'callback_query']
-    });
-    console.log('✅ Webhook set successfully');
+    if (process.env.NODE_ENV === 'production') {
+      const webhookUrl = `${WEBAPP_URL}/webhook`;
+      await bot.telegram.setWebhook(webhookUrl);
+      console.log(`✅ Webhook set to: ${webhookUrl}`);
+    } else {
+      await bot.launch();
+      console.log('✅ Bot launched in polling mode');
+    }
   } catch (error) {
-    console.warn('⚠️ Could not set webhook:', error.message);
+    console.error('Failed to launch bot:', error);
   }
 });
 
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received, closing server');
-  server.close(() => {
-    console.log('Server closed');
-    process.exit(0);
-  });
-});
-
-export default app;
+process.once('SIGINT', () => bot.stop('SIGINT'));
+process.once('SIGTERM', () => bot.stop('SIGTERM'));
