@@ -10,7 +10,7 @@ dotenv.config({ path: '.env.local' });
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3001;
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const WEBAPP_URL = process.env.WEBAPP_URL;
 
@@ -44,8 +44,13 @@ function loadUserData(userId) {
 
 // REST API Routes
 app.post('/api/user/:userId', (req, res) => {
-  const userData = loadUserData(req.params.userId);
-  res.json(userData);
+  try {
+    const userData = loadUserData(req.params.userId);
+    res.json(userData);
+  } catch (error) {
+    console.error('Ошибка в /api/user:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
 });
 
 app.post('/api/user/:userId/claim-daily', (req, res) => {
@@ -133,8 +138,8 @@ app.post('/api/user/:userId/draw-card', (req, res) => {
 
 // Telegram Bot Commands
 bot.start((ctx) => {
-  const webAppUrl = `${WEBAPP_URL}?user_id=${ctx.from.id}&username=${ctx.from.username || 'Anonymous'}`;
-  
+  const webAppUrl = WEBAPP_URL;
+
   ctx.reply(
     '✨ Добро пожаловать в **Измерение Ани** ✨\n\n' +
     '_Здесь каждый пользователь - путешественник между мирами..._\n\n' +
@@ -197,23 +202,35 @@ app.post('/webhook', express.json(), (req, res) => {
 });
 
 // Start server
-app.listen(PORT, async () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`🤖 Bot is ready to receive updates`);
 
-  try {
-    if (process.env.NODE_ENV === 'production') {
-      const webhookUrl = `${WEBAPP_URL}/webhook`;
-      await bot.telegram.setWebhook(webhookUrl);
-      console.log(`✅ Webhook set to: ${webhookUrl}`);
-    } else {
-      await bot.launch();
-      console.log('✅ Bot launched in polling mode');
+  setTimeout(async () => {
+    try {
+      if (process.env.NODE_ENV === 'production') {
+        const webhookUrl = `${WEBAPP_URL}/webhook`;
+        await bot.telegram.setWebhook(webhookUrl);
+        console.log(`✅ Webhook set to: ${webhookUrl}`);
+        console.log(`🤖 Bot ready for webhook updates`);
+      } else {
+        console.log('🤖 Launching bot in polling mode...');
+        await bot.launch();
+        console.log('✅ Bot launched successfully');
+      }
+    } catch (error) {
+      console.error('❌ Bot error:', error.message);
     }
-  } catch (error) {
-    console.error('Failed to launch bot:', error);
-  }
+  }, 500);
 });
 
-process.once('SIGINT', () => bot.stop('SIGINT'));
-process.once('SIGTERM', () => bot.stop('SIGTERM'));
+process.once('SIGINT', () => {
+  console.log('Stopping bot...');
+  bot.stop('SIGINT');
+  server.close(() => process.exit(0));
+});
+
+process.once('SIGTERM', () => {
+  console.log('Stopping bot...');
+  bot.stop('SIGTERM');
+  server.close(() => process.exit(0));
+});

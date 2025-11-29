@@ -15,19 +15,48 @@ function App() {
   useEffect(() => {
     const initApp = async () => {
       TelegramService.init();
-      const params = new URLSearchParams(window.location.search);
-      const id = params.get('user_id');
-      setUserId(id);
 
-      if (id) {
+      const id = TelegramService.getUserId();
+
+      if (!id) {
+        console.warn('Telegram ID не найден. Используется тестовый ID.');
+        const testId = Math.random().toString(36).substring(7);
+        setUserId(testId);
+        try {
+          const response = await fetch(`/api/user/${testId}`, { method: 'POST' });
+          if (response.ok) {
+            const data = await response.json();
+            setUserData(data);
+          }
+        } catch (error) {
+          console.error('Ошибка загрузки данных:', error);
+          setUserData({
+            userId: testId,
+            dimensionLevel: 1,
+            soulEnergy: 100,
+            crystals: 0,
+            soulCards: [],
+            abilities: [],
+            dimensions: { unlocked: [1], current: 1 },
+            lastDailyClaimTime: 0,
+            createdAt: Date.now()
+          });
+        }
+      } else {
+        setUserId(id);
         try {
           const response = await fetch(`/api/user/${id}`, { method: 'POST' });
-          const data = await response.json();
-          setUserData(data);
+          if (response.ok) {
+            const data = await response.json();
+            setUserData(data);
+          } else {
+            console.error('API вернул ошибку:', response.status);
+          }
         } catch (error) {
-          console.error('Failed to load user data:', error);
+          console.error('Ошибка загрузки данных:', error);
         }
       }
+
       setLoading(false);
     };
 
